@@ -84,7 +84,7 @@
   --text-faint: #505060;
 
   --accent-primary: #00c8d4;
-  --accent-primary-dim: rgba(0, 200, 212, 0.12);
+  --accent-primary-dim: rgb(0 200 212 / 12%);
   --accent-ai: #6457f9;
   --accent-ai-text: #8b82ff;
 
@@ -105,7 +105,7 @@
   --secondary-foreground: #c0c0cc;
   --muted: #1e1e23;
   --muted-foreground: #808090;
-  --accent: rgba(0, 200, 212, 0.12);
+  --accent: rgb(0 200 212 / 12%);
   --accent-foreground: #00c8d4;
   --destructive: #ff4d4f;
   --destructive-foreground: #f0f0f4;
@@ -118,12 +118,14 @@
 @layer base {
   * {
     border-color: var(--border-default);
+
     @apply border-border outline-ring/50;
   }
 
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
+
     @apply bg-background text-foreground;
   }
 
