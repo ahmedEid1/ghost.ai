@@ -1,0 +1,9 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "@dreamsicle.io/stylelint-config-tailwindcss"
+  ],
+  "rules": {
+    "custom-property-empty-line-before": null
+  }
+}
