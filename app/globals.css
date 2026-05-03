@@ -1,26 +1,133 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Project background tokens */
+  --color-base: var(--bg-base);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-subtle: var(--bg-subtle);
+
+  /* Project border tokens */
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+
+  /* Project text tokens */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  /* Project accent tokens */
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-primary-dim: var(--accent-primary-dim);
+  --color-accent-ai: var(--accent-ai);
+  --color-accent-ai-text: var(--accent-ai-text);
+
+  /* Project state tokens */
+  --color-state-error: var(--state-error);
+  --color-state-success: var(--state-success);
+  --color-state-warning: var(--state-warning);
+
+  /* shadcn semantic tokens mapped to dark theme */
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-elevated);
+  --color-popover-foreground: var(--text-primary);
+  --color-primary: var(--accent-primary);
+  --color-primary-foreground: var(--bg-base);
+  --color-secondary: var(--bg-elevated);
+  --color-secondary-foreground: var(--text-secondary);
+  --color-muted: var(--bg-subtle);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--accent-primary-dim);
+  --color-accent-foreground: var(--accent-primary);
+  --color-destructive: var(--state-error);
+  --color-destructive-foreground: var(--text-primary);
+  --color-border: var(--border-default);
+  --color-input: var(--bg-elevated);
+  --color-ring: var(--accent-primary);
+
+  /* Radius scale */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.5rem;
+
+  /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Dark-only theme — all tokens defined once on :root, no .dark override needed */
+:root {
+  /* Project raw tokens */
+  --bg-base: #080809;
+  --bg-surface: #111114;
+  --bg-elevated: #18181c;
+  --bg-subtle: #1e1e23;
+
+  --border-default: #2a2a30;
+  --border-subtle: #3a3a42;
+
+  --text-primary: #f0f0f4;
+  --text-secondary: #c0c0cc;
+  --text-muted: #808090;
+  --text-faint: #505060;
+
+  --accent-primary: #00c8d4;
+  --accent-primary-dim: rgba(0, 200, 212, 0.12);
+  --accent-ai: #6457f9;
+  --accent-ai-text: #8b82ff;
+
+  --state-error: #ff4d4f;
+  --state-success: #34d399;
+  --state-warning: #fbbf24;
+
+  /* shadcn semantic tokens (consumed by components/ui/*) */
+  --background: #080809;
+  --foreground: #f0f0f4;
+  --card: #111114;
+  --card-foreground: #f0f0f4;
+  --popover: #18181c;
+  --popover-foreground: #f0f0f4;
+  --primary: #00c8d4;
+  --primary-foreground: #080809;
+  --secondary: #18181c;
+  --secondary-foreground: #c0c0cc;
+  --muted: #1e1e23;
+  --muted-foreground: #808090;
+  --accent: rgba(0, 200, 212, 0.12);
+  --accent-foreground: #00c8d4;
+  --destructive: #ff4d4f;
+  --destructive-foreground: #f0f0f4;
+  --border: #2a2a30;
+  --input: #18181c;
+  --ring: #00c8d4;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--border-default);
+    @apply border-border outline-ring/50;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+  }
 }
