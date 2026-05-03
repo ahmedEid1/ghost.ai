@@ -13,8 +13,10 @@ export function ProjectSidebar({ isOpen, onClose }: ProjectSidebarProps) {
   return (
     <div
       className={`fixed top-12 left-0 h-[calc(100vh-3rem)] w-72 z-40 flex flex-col bg-surface border-r border-border-default transition-transform duration-300 ease-in-out ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
+        isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
       }`}
+      aria-hidden={!isOpen}
+      inert={!isOpen ? "" : undefined}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-border-default">
         <span className="text-sm font-semibold text-text-primary">Projects</span>

@@ -6,11 +6,11 @@ Create `components/editor/editor-navbar.tsx`.
 
 Requirements:
 - fixed-height top navbar
-- lef, center, and right sections
+- left, center, and right sections
 - left section contains sidebar toggle button.
 - use `PanelLeftOpen` / `PanelLeftClose` icons based on sidebar state
 - right section stays empty for now.
-- dark background eith subtle border at the bottom.
+- dark background with subtle border at the bottom.
 
 ### Project Sidebar
 
@@ -30,17 +30,15 @@ Requirements:
 
 ### Dialog Pattern
 
-Use the existing color tokens in `global.css` to create a reusable dialog component.
+Use the existing color tokens in `globals.css` to implement a lightweight reusable dialog component.
 
 Support the following props:
 - title
 - description
 - footer actions
 
-Don't build the actual dialog yet.
-
 ### Check when done
 
 - New components compile without errors.
-- no linting errors.
-- dialog pattern is implemented and ready to be used in future chapters.
+- No linting errors.
+- Dialog component is implemented and ready to be used in future chapters.

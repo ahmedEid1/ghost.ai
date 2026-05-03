@@ -1,4 +1,4 @@
-Read `Agent.md` before starting.
+Read `AGENTS.md` before starting.
 
 We're adding the design system and UI primitives components.
 
@@ -19,7 +19,7 @@ Also Install `lucide-react`.
 
 Create `lib/utils.ts` with a reusable `cn()` helper for merging Tailwind classes.
 
-Ensure all components match the exsisting dark theme in `global.css`.
+Ensure all components match the existing dark theme in `globals.css`.
 
 
 ### Check when done
