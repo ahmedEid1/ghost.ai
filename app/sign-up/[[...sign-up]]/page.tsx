@@ -4,7 +4,7 @@ import { AuthPanel } from "@/components/auth/auth-panel";
 
 export default function SignUpPage() {
   return (
-    <div className="flex h-screen overflow-hidden bg-base">
+    <div className="flex h-screen overflow-auto bg-base">
       <AuthPanel />
 
       {/* Form panel */}

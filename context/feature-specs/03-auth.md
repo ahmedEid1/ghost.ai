@@ -4,7 +4,7 @@ Clerk is already installed and connected. Wire it into the Next.js app: provider
 
 Use the Clerk `dark` theme from `@clerk/ui/themes` as the base.
 
-Override Clerk apperance variables using the app's existing Css variables.  Don't hardcode any colors, but instead use the app's existing color variables to ensure a consistent look and feel.
+Override Clerk appearance variables using the app's existing CSS variables.  Don't hardcode any colors, but instead use the app's existing color variables to ensure a consistent look and feel.
 
 ## Sign-in and Sign-up
 -  large screens: simple 2-panel layout.
@@ -14,7 +14,7 @@ Override Clerk apperance variables using the app's existing Css variables.  Don'
 - top section: app logo and tagline.
 - bottom section: Clerk's sign-in/sign-up form, centered horizontally.
 - The sign-in/sign-up form should be visually appealing and user-friendly, with clear calls to action and a clean design.
-- no gradients, no oversided hero sections or feature cars.
+- no gradients, no oversized hero sections or feature colors.
 - no scroll-heavy layouts. the sign-in/sign-up page should fit within the viewport without requiring scrolling.
 
 Keep the layout minimal and professional.
@@ -22,7 +22,7 @@ Keep the layout minimal and professional.
 ## Implementation
 Wrap the root layout with Clerk's `ClerkProvider` using the `dark` theme.
 
-Create singn-in and sign-up pages using Clerk's pre-built components. Customize the appearance using the app's existing CSS variables.
+Create sign-in and sign-up pages using Clerk's pre-built components. Customize the appearance using the app's existing CSS variables.
 
 use `proxy.ts` at the root of the project, not the `middleware.ts` file.
 
@@ -33,7 +33,7 @@ update `/`:
 - authenticated users: redirect to `/editor`
 - unauthenticated users: redirect to `/sign-in`
 
-Add Clerk's `UserButton` component to the editor navbar right section for porfile settings and sign-out.
+Add Clerk's `UserButton` component to the editor navbar right section for profile settings and sign-out.
 
 Keep Clerk's default user menu and profile flow intact. Don't rebuild or heavily customize the Clerk internals.
 

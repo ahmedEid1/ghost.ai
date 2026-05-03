@@ -1,10 +1,16 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
+function toPublicRoutePatterns(raw: string | undefined): string[] {
+  if (!raw) return []
+  const path = raw.startsWith('/') ? raw.replace(/[?#].*$/, '') : null
+  if (!path) return []
+  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return [path, `${escaped}(.*)`]
+}
+
 const isPublicRoute = createRouteMatcher([
-  process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL!,
-  `${process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL}(.*)`,
-  process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL!,
-  `${process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL}(.*)`,
+  ...toPublicRoutePatterns(process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL),
+  ...toPublicRoutePatterns(process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL),
 ])
 
 export default clerkMiddleware(async (auth, request) => {
