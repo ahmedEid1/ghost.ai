@@ -24,14 +24,7 @@ function ProjectItem({
   onDelete: (project: Project) => void;
 }) {
   return (
-    <div
-      className="flex items-center gap-1 rounded-xl px-2 py-2 hover:bg-subtle cursor-pointer min-w-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      tabIndex={0}
-      role="button"
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") e.currentTarget.click();
-      }}
-    >
+    <div className="flex items-center gap-1 rounded-xl px-2 py-2 hover:bg-subtle min-w-0 transition-colors">
       <span className="flex-1 text-sm text-text-primary truncate min-w-0">
         {project.name}
       </span>

@@ -7,11 +7,15 @@ interface ProjectDialogsContextValue {
   openSidebar: () => void;
 }
 
-export const ProjectDialogsContext = createContext<ProjectDialogsContextValue>({
-  openCreateDialog: () => {},
-  openSidebar: () => {},
-});
+export const ProjectDialogsContext =
+  createContext<ProjectDialogsContextValue | null>(null);
 
-export function useProjectDialogsContext() {
-  return useContext(ProjectDialogsContext);
+export function useProjectDialogsContext(): ProjectDialogsContextValue {
+  const ctx = useContext(ProjectDialogsContext);
+  if (ctx === null) {
+    throw new Error(
+      "useProjectDialogsContext must be used within ProjectDialogsContext.Provider"
+    );
+  }
+  return ctx;
 }
