@@ -37,7 +37,7 @@ Add Clerk's `UserButton` component to the editor navbar right section for profil
 
 Keep Clerk's default user menu and profile flow intact. Don't rebuild or heavily customize the Clerk internals.
 
-Use Existing \clerk env variables for configuration. Don't rename or create new env variables for Clerk configuration.
+Use existing `@clerk` env variables for configuration. Don't rename or create new env variables for Clerk configuration.
 
 
 ## Dependencies
