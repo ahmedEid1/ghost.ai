@@ -8,13 +8,14 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Feature 03 — Auth: Clerk integration, auth pages, route protection, and user menu.
+- Feature 04 — Project Dialogs: editor home screen, Create/Rename/Delete project dialogs, sidebar actions.
 
 ## Completed
 
 - **Feature 01 — Design System**: shadcn/ui installed and configured; Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea added to `components/ui/`; dark theme CSS custom properties set in `globals.css`; `lib/utils.ts` with `cn()` created; `lucide-react` installed.
 - **Feature 02 — Editor Chrome**: `EditorNavbar` with sidebar toggle (PanelLeftOpen/Close icons); `ProjectSidebar` floating overlay with Tabs (My Projects / Shared with Me), empty states, Create New Project button; `EditorDialog` reusable wrapper around shadcn Dialog accepting title, description, footer, and children props.
 - **Feature 03 — Auth**: `@clerk/ui` installed; `ClerkProvider` wraps root layout with `dark` theme from `@clerk/ui/themes` and CSS-variable overrides; `proxy.ts` at project root uses `clerkMiddleware` + `createRouteMatcher` to protect all routes except sign-in and sign-up; sign-in and sign-up pages use Clerk prebuilt components inside a 2-panel layout (logo/tagline left, form right on large screens; stacked on small screens); root `page.tsx` redirects authenticated users to `/editor` and unauthenticated users to `/sign-in`; `UserButton` added to `EditorNavbar` right section.
+- **Feature 04 — Project Dialogs**: Editor home screen with heading, description, and Create/Open buttons; `useProjectDialogs` hook in `hooks/` managing dialog, form, and loading state; Create, Rename, and Delete project dialogs in `components/editor/project-dialogs.tsx`; `ProjectDialogsContext` threads `openCreateDialog` and `openSidebar` from `EditorShell` to the editor page; `ProjectSidebar` updated with mock project list, Rename/Delete actions for owned projects (hidden for shared), mobile backdrop scrim; `lib/mock-projects.ts` holds `Project` type, mock data, and `toSlug` utility.
 
 ## In Progress
 
@@ -22,7 +23,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Feature 04 (TBD per feature-specs).
+- Feature 05 (TBD per feature-specs).
 
 ## Open Questions
 
