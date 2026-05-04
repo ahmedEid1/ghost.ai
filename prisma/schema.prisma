@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id             String                @id @default(cuid())
+  ownerId        String
+  name           String
+  description    String?
+  status         ProjectStatus         @default(DRAFT)
+  canvasJsonPath String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  collaborators  ProjectCollaborator[]
+
+  @@index([ownerId])
+  @@index([ownerId, createdAt])
+}
+
+model ProjectCollaborator {
+  id                String   @id @default(cuid())
+  projectId         String
+  collaboratorEmail String
+  createdAt         DateTime @default(now())
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, collaboratorEmail])
+  @@index([collaboratorEmail])
+  @@index([createdAt])
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
