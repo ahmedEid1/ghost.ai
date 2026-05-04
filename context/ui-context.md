@@ -53,6 +53,8 @@ Radius increases with surface depth — smaller for inner elements, larger for o
 
 8 defined color pairs. Each pair specifies a dark node fill and a vivid contrasting text color tuned for readability on the dark canvas. Defined in `types/canvas.ts` as `NODE_COLORS`.
 
+This same palette is used by the node color toolbar in Feature 15, so the swatch order and pair definitions must stay canonical here and in the canvas types.
+
 | Node fill | Text color | Character              |
 | --------- | ---------- | ---------------------- |
 | `#1F1F1F` | `#EDEDED`  | Neutral dark (default) |
@@ -68,7 +70,13 @@ Default node color: `#1F1F1F` with `#EDEDED` text.
 
 ### Edge Style
 
-Smooth-step path with an arrow marker. Default edge color: `#f8fafc`. Stroke width is thin — edges are visually secondary to nodes.
+Feature 16 adds custom edge rendering on top of the base canvas style.
+
+- Default edge color remains `#f8fafc`.
+- Stroke width stays thin so edges remain visually secondary to nodes.
+- Arrow markers remain at the destination end.
+- Hover and selection states may brighten the stroke, but the visible line should not become visually heavy.
+- Inline labels should read as small pill badges when not being edited.
 
 ### Node Shapes
 

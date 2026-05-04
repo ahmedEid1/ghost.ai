@@ -7,34 +7,57 @@ import {
   RoomProvider,
   ClientSideSuspense,
 } from "@liveblocks/react/suspense";
+import { useUndo, useRedo, useCanUndo, useCanRedo } from "@liveblocks/react";
 import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow";
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
-  MiniMap,
   ConnectionMode,
   useReactFlow,
   type Node,
-  type Edge,
+  type Connection,
+  type EdgeTypes,
   type NodeTypes,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "@liveblocks/react-ui/styles.css";
 import "@liveblocks/react-flow/styles.css";
 
 import { CanvasNode } from "@/components/editor/canvas-node";
+import { CanvasEdge, type CanvasEdgeFlowType, type CanvasEdgeData } from "@/components/editor/canvas-edge";
 import { ShapePanel, DRAG_DATA_KEY, type ShapeDragPayload } from "@/components/editor/shape-panel";
+import { CanvasControls } from "@/components/editor/canvas-controls";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { NODE_COLORS, type CanvasNodeData } from "@/types/canvas";
+import type { CanvasTemplate } from "@/components/editor/starter-templates";
 
-// --- Canvas-specific node type ---
+// --- Canvas-specific node and edge types ---
 
 type CanvasFlowNode = Node<CanvasNodeData, "canvasNode">;
 
-// --- Node types (stable reference outside component) ---
+// --- Stable type registries (outside component to avoid re-renders) ---
 
 const nodeTypes: NodeTypes = {
   canvasNode: CanvasNode,
+};
+
+const edgeTypes: EdgeTypes = {
+  canvasEdge: CanvasEdge,
+};
+
+const defaultEdgeOptions = {
+  type: "canvasEdge",
+  reconnectable: true,
+  data: {
+    routing:     "smoothstep",
+    color:       "rgba(255,255,255,0.55)",
+    strokeWidth: 1.5,
+    strokeDash:  "solid",
+    arrowStart:  false,
+    arrowEnd:    true,
+  } satisfies CanvasEdgeData,
 };
 
 // --- Node ID generator ---
@@ -129,15 +152,108 @@ function CoordinateBridge({ screenToFlowRef }: CoordinateBridgeProps) {
 
 // --- React Flow canvas wired to Liveblocks ---
 
-function CanvasFlow() {
+interface CanvasFlowProps {
+  onImportReady?: (fn: (template: CanvasTemplate) => void) => void;
+}
+
+function CanvasFlow({ onImportReady }: CanvasFlowProps) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
-    useLiveblocksFlow<CanvasFlowNode, Edge>({
+    useLiveblocksFlow<CanvasFlowNode, CanvasEdgeFlowType>({
       suspense: true,
       nodes: { initial: [] },
       edges: { initial: [] },
     });
 
   const screenToFlowRef = useRef<((pos: { x: number; y: number }) => { x: number; y: number }) | null>(null);
+  const flowInstanceRef = useRef<ReactFlowInstance<CanvasFlowNode, CanvasEdgeFlowType> | null>(null);
+
+  // Liveblocks history
+  const undo = useUndo();
+  const redo = useRedo();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
+
+  // Zoom handlers
+  const handleZoomIn = useCallback(() => {
+    flowInstanceRef.current?.zoomIn({ duration: 200 });
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    flowInstanceRef.current?.zoomOut({ duration: 200 });
+  }, []);
+
+  const handleFitView = useCallback(() => {
+    flowInstanceRef.current?.fitView({ duration: 300, padding: 0.1 });
+  }, []);
+
+  const handleInit = useCallback((instance: ReactFlowInstance<CanvasFlowNode, CanvasEdgeFlowType>) => {
+    flowInstanceRef.current = instance;
+  }, []);
+
+  // Template import: replace all nodes and edges with cloned template data
+  const importFnRef = useRef<(template: CanvasTemplate) => void>(() => {});
+
+  const handleImportTemplate = useCallback(
+    (template: CanvasTemplate) => {
+      const removeNodes = nodes.map((n) => ({ type: "remove" as const, id: n.id }));
+      const addNodes = template.nodes.map((n) => ({
+        type: "add" as const,
+        item: { ...n } as CanvasFlowNode,
+      }));
+      onNodesChange([...removeNodes, ...addNodes]);
+
+      const removeEdges = edges.map((e) => ({ type: "remove" as const, id: e.id }));
+      const addEdges = template.edges.map((e) => ({
+        type: "add" as const,
+        item: { ...e } as CanvasEdgeFlowType,
+      }));
+      onEdgesChange([...removeEdges, ...addEdges]);
+
+      setTimeout(() => {
+        flowInstanceRef.current?.fitView({ duration: 300, padding: 0.15 });
+      }, 60);
+    },
+    [nodes, edges, onNodesChange, onEdgesChange],
+  );
+
+  importFnRef.current = handleImportTemplate;
+
+  const stableImportFn = useCallback((template: CanvasTemplate) => {
+    importFnRef.current(template);
+  }, []);
+
+  useEffect(() => {
+    onImportReady?.(stableImportFn);
+  }, [onImportReady, stableImportFn]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onZoomIn: handleZoomIn,
+    onZoomOut: handleZoomOut,
+    onUndo: undo,
+    onRedo: redo,
+  });
+
+  // Reconnect: replace the old edge with the same data but updated source/target
+  const handleReconnect = useCallback(
+    (oldEdge: CanvasEdgeFlowType, newConnection: Connection) => {
+      onEdgesChange([
+        { type: "remove", id: oldEdge.id },
+        {
+          type: "add",
+          item: {
+            ...oldEdge,
+            source:       newConnection.source,
+            target:       newConnection.target,
+            sourceHandle: newConnection.sourceHandle ?? null,
+            targetHandle: newConnection.targetHandle ?? null,
+            selected:     false,
+          },
+        },
+      ]);
+    },
+    [onEdgesChange]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     if (!e.dataTransfer.types.includes(DRAG_DATA_KEY)) return;
@@ -190,10 +306,14 @@ function CanvasFlow() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={handleReconnect}
         onDelete={onDelete}
+        onInit={handleInit}
         connectionMode={ConnectionMode.Loose}
         fitView
         style={{ background: "var(--bg-base)" }}
@@ -206,18 +326,19 @@ function CanvasFlow() {
           color="var(--text-primary)"
           style={{ opacity: 0.08 }}
         />
-        <MiniMap
-          style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-default)",
-          }}
-          nodeColor="var(--accent-primary)"
-          maskColor="rgba(0,0,0,0.4)"
-        />
         <Cursors />
       </ReactFlow>
 
       <ShapePanel />
+      <CanvasControls
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onFitView={handleFitView}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+      />
     </div>
   );
 }
@@ -226,9 +347,10 @@ function CanvasFlow() {
 
 interface CanvasProps {
   roomId: string;
+  onImportReady?: (fn: (template: CanvasTemplate) => void) => void;
 }
 
-export function Canvas({ roomId }: CanvasProps) {
+export function Canvas({ roomId, onImportReady }: CanvasProps) {
   const { user, isLoaded } = useUser();
 
   const authEndpoint = useCallback(
@@ -271,7 +393,7 @@ export function Canvas({ roomId }: CanvasProps) {
       >
         <CanvasErrorBoundary fallback={<CanvasError />}>
           <ClientSideSuspense fallback={<CanvasLoading />}>
-            <CanvasFlow />
+            <CanvasFlow onImportReady={onImportReady} />
           </ClientSideSuspense>
         </CanvasErrorBoundary>
       </RoomProvider>

@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { type NodeShape, NODE_SHAPES } from "@/types/canvas";
+import { ShapeBody } from "@/components/editor/node-shapes";
 
 export interface ShapeDragPayload {
   shape: NodeShape;
@@ -27,6 +30,49 @@ const SHAPE_LABELS: Record<NodeShape, string> = {
   cylinder:  "Cylinder",
   hexagon:   "Hexagon",
 };
+
+// --- Drag ghost preview ---
+
+interface GhostInfo {
+  shape: NodeShape;
+  width: number;
+  height: number;
+}
+
+interface DragGhostProps {
+  info: GhostInfo;
+  x: number;
+  y: number;
+}
+
+function DragGhost({ info, x, y }: DragGhostProps) {
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="pointer-events-none fixed"
+      style={{
+        zIndex: 9998,
+        left: x + 14,
+        top: y + 14,
+        width: info.width,
+        height: info.height,
+        opacity: 0.78,
+      }}
+    >
+      <div className="relative h-full w-full">
+        <ShapeBody
+          shape={info.shape}
+          fill="var(--bg-surface)"
+          borderColor="var(--accent-primary)"
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// --- Shape icon (panel button) ---
 
 function ShapeIcon({ shape }: { shape: NodeShape }) {
   const shared = { fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinejoin: "round" as const };
@@ -74,16 +120,29 @@ function ShapeIcon({ shape }: { shape: NodeShape }) {
   }
 }
 
+// --- Shape button ---
+
 interface ShapeButtonProps {
   shape: NodeShape;
+  onDragStart: (shape: NodeShape, width: number, height: number) => void;
+  onDragEnd: () => void;
 }
 
-function ShapeButton({ shape }: ShapeButtonProps) {
+function ShapeButton({ shape, onDragStart, onDragEnd }: ShapeButtonProps) {
   function handleDragStart(e: React.DragEvent) {
     const { width, height } = SHAPE_DEFAULT_SIZES[shape];
     const payload: ShapeDragPayload = { shape, width, height };
     e.dataTransfer.setData(DRAG_DATA_KEY, JSON.stringify(payload));
     e.dataTransfer.effectAllowed = "copy";
+
+    // Suppress the browser's native ghost image
+    const blank = document.createElement("div");
+    blank.style.cssText = "position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;";
+    document.body.appendChild(blank);
+    e.dataTransfer.setDragImage(blank, 0, 0);
+    setTimeout(() => document.body.removeChild(blank), 0);
+
+    onDragStart(shape, width, height);
   }
 
   return (
@@ -104,6 +163,7 @@ function ShapeButton({ shape }: ShapeButtonProps) {
       <button
         draggable
         onDragStart={handleDragStart}
+        onDragEnd={onDragEnd}
         title={SHAPE_LABELS[shape]}
         className="flex h-9 w-9 cursor-grab items-center justify-center rounded-xl transition-colors active:cursor-grabbing"
         style={{ color: "var(--text-muted)" }}
@@ -122,20 +182,65 @@ function ShapeButton({ shape }: ShapeButtonProps) {
   );
 }
 
+// --- Shape panel ---
+
 export function ShapePanel() {
+  const [draggingShape, setDraggingShape] = useState<GhostInfo | null>(null);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+
+  const handleDragStart = useCallback((shape: NodeShape, width: number, height: number) => {
+    setDraggingShape({ shape, width, height });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingShape(null);
+  }, []);
+
+  useEffect(() => {
+    if (!draggingShape) return;
+
+    const onDragOver = (e: DragEvent) => {
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    };
+
+    const onDragEnd = () => setDraggingShape(null);
+
+    // Capture phase so we see all dragover events regardless of child handling
+    document.addEventListener("dragover", onDragOver, true);
+    document.addEventListener("dragend", onDragEnd, true);
+    document.addEventListener("drop", onDragEnd, true);
+
+    return () => {
+      document.removeEventListener("dragover", onDragOver, true);
+      document.removeEventListener("dragend", onDragEnd, true);
+      document.removeEventListener("drop", onDragEnd, true);
+    };
+  }, [draggingShape]);
+
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
-      <div
-        className="pointer-events-auto flex items-center gap-1 rounded-full border px-3 py-2 shadow-2xl"
-        style={{
-          background: "var(--bg-elevated)",
-          borderColor: "var(--border-default)",
-        }}
-      >
-        {NODE_SHAPES.map((shape) => (
-          <ShapeButton key={shape} shape={shape} />
-        ))}
+    <>
+      {draggingShape && (
+        <DragGhost info={draggingShape} x={cursorPos.x} y={cursorPos.y} />
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
+        <div
+          className="pointer-events-auto flex items-center gap-1 rounded-full border px-3 py-2 shadow-2xl"
+          style={{
+            background: "var(--bg-elevated)",
+            borderColor: "var(--border-default)",
+          }}
+        >
+          {NODE_SHAPES.map((shape) => (
+            <ShapeButton
+              key={shape}
+              shape={shape}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
