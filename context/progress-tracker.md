@@ -7,7 +7,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Feature 07 — Wire Editor Home: project list fetched server-side, real API calls for create/rename/delete.
+- Feature 13 (TBD per feature-specs).
 
 ## Completed
 
@@ -22,13 +22,17 @@ Update this file whenever the current phase, active feature, or implementation s
 
 - **Feature 09 — Share Dialog**: `GET/POST /api/projects/[projectId]/collaborators` and `DELETE /api/projects/[projectId]/collaborators/[collaboratorId]` routes enforce auth and owner-only mutations; Clerk `clerkClient` used to resolve collaborator emails to display names and avatars; `ShareDialog` client component with invite form, animated copy-link button, skeleton loading, and per-member remove controls; `WorkspaceNavbar` Share button wired to open dialog; `EditorShell` hosts a second instance of `ShareDialog` triggered from the per-project Share icon in `ProjectSidebar`; `Avatar`/`Badge` shadcn components added; build verified clean.
 
+- **Feature 10 — Liveblocks Setup**: `@liveblocks/node` installed; `liveblocks.config.ts` typed with `Presence` (`cursor: {x,y}|null`, `isThinking: boolean`) and `UserMeta` (`id`, `info.displayName`, `info.avatarUrl`, `info.cursorColor`); `lib/liveblocks.ts` singleton client with `getCursorColor(userId)` deterministic color helper (10-color palette, djb2-style hash); `POST /api/liveblocks-auth` validates body, enforces Clerk auth, prevents user ID impersonation, checks project ownership/collaborator access via `hasAccessToProject`, calls `liveblocks.getOrCreateRoom` + `updateRoom` to provision the room and grant write access, then issues an ID token via `liveblocks.identifyUser`; returns `403 Forbidden` for all unauthorized scenarios; build verified clean.
+- **Feature 11 — Base Canvas**: `types/canvas.ts` defines `NodeColor`, `NodeShape`, `NODE_COLORS` (8 dark fill+text pairs), `NODE_SHAPES` (6 shapes), `CanvasNodeData`, `CanvasNodeType`, `CanvasEdgeType`; `components/editor/canvas.tsx` is a client component wrapping `LiveblocksProvider` (auth callback sends userId, roomId, displayName, avatarUrl to `/api/liveblocks-auth`, returns `{error:"forbidden"}` on 403 to stop retries), `RoomProvider` with `initialPresence: {cursor:null, isThinking:false}`, an inline class-based `CanvasErrorBoundary`, and `ClientSideSuspense`; `CanvasFlow` inner component uses `useLiveblocksFlow({suspense:true})` to wire synced `nodes`/`edges` and all change handlers into `<ReactFlow>` with `ConnectionMode.Loose`, `fitView`, dot-pattern `<Background>` (gap 24, opacity 0.08), dark-styled `<MiniMap>`, and `<Cursors>` for real-time presence; `WorkspaceShell` canvas placeholder replaced with `<Canvas roomId={project.id} />`; build verified clean.
+- **Feature 12 — Shape Panel**: `components/editor/shape-panel.tsx` floating pill toolbar at canvas bottom-center with six draggable shape buttons (rectangle, diamond, circle, pill, cylinder, hexagon), each rendering a custom inline SVG icon and tooltip; drag payload (`application/ghost-shape`) carries `{ shape, width, height }` with sensible defaults (rectangle 160×80, diamond 140×140, circle 80×80, pill 160×60, cylinder/hexagon 100×100 and 120×120); `components/editor/canvas-node.tsx` custom React Flow node renderer — bordered rectangle with centered label, `data.color.fill/text` theming, `selected`/hover border accent, and four `Handle` connections (Top/Left=target, Bottom/Right=source) that fade in on hover; `canvas.tsx` updated — `useLiveblocksFlow<CanvasFlowNode, Edge>` typed generically, `nodeTypes` registered with `CanvasNode`, `CanvasFlow` outer div handles `dragover`/`drop`, `CoordinateBridge` child (inside ReactFlow tree) captures `screenToFlowPosition` via ref so the outer drop handler converts screen→flow coordinates, nodes created via `onNodesChange([{ type:"add", item:newNode }])` with ID pattern `${shape}-${Date.now()}-${counter}`, `ShapePanel` rendered as absolute overlay above the ReactFlow canvas; build verified clean.
+
 ## In Progress
 
 - None.
 
 ## Next Up
 
-- Feature 10 (TBD per feature-specs).
+- Feature 13 (TBD per feature-specs).
 
 ## Open Questions
 
