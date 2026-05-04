@@ -165,6 +165,7 @@ function ShapeButton({ shape, onDragStart, onDragEnd }: ShapeButtonProps) {
         onDragStart={handleDragStart}
         onDragEnd={onDragEnd}
         title={SHAPE_LABELS[shape]}
+        aria-label={SHAPE_LABELS[shape]}
         className="flex h-9 w-9 cursor-grab items-center justify-center rounded-xl transition-colors active:cursor-grabbing"
         style={{ color: "var(--text-muted)" }}
         onMouseEnter={(e) => {

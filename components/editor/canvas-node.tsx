@@ -30,7 +30,7 @@ const GLOBAL_MIN_W = 72;
 const GLOBAL_MIN_H = 48;
 
 const HANDLE_BASE: React.CSSProperties = {
-  background: "white",
+  background: "var(--text-primary)",
   border: "none",
   width: 8,
   height: 8,
@@ -67,6 +67,8 @@ function NodeColorToolbar({ id, currentColor, updateNodeData }: NodeColorToolbar
         return (
           <button
             key={i}
+            aria-label={color.name}
+            aria-pressed={isActive}
             className="nodrag nopan h-5 w-5 rounded-full transition-transform hover:scale-110"
             style={{
               background: color.fill,

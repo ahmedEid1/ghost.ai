@@ -361,8 +361,8 @@ function MidpointHandle({ x, y, hasCustomCenter, screenToFlowPosition, onDrag, o
         width:  14,
         height: 14,
         borderRadius: "50%",
-        background: hasCustomCenter ? "#00c8d4" : "var(--bg-surface)",
-        border: "2px solid #00c8d4",
+        background: hasCustomCenter ? "var(--accent-primary)" : "var(--bg-surface)",
+        border: "2px solid var(--accent-primary)",
         boxShadow: dragging
           ? "0 0 0 5px rgba(0,200,212,0.25)"
           : "0 0 0 2px rgba(0,200,212,0.15)",
@@ -498,8 +498,8 @@ function TbBtn({ active, title, onClick, children }: {
         width: 26, height: 26,
         display: "flex", alignItems: "center", justifyContent: "center",
         borderRadius: 7, border: "none",
-        background: active ? "rgba(0,200,212,0.15)" : "transparent",
-        color:      active ? "#00c8d4" : "var(--text-muted)",
+        background: active ? "var(--accent-primary-dim)" : "transparent",
+        color:      active ? "var(--accent-primary)" : "var(--text-muted)",
         cursor: "pointer", padding: 0,
         transition: "background 120ms, color 120ms",
         flexShrink: 0,

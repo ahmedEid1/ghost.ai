@@ -7,7 +7,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Feature 17 specification finalized; ready for implementation.
+- Next target: TBD.
 
 ## Completed
 

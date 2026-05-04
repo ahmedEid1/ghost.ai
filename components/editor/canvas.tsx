@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, useCallback, useEffect, useRef, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   LiveblocksProvider,
@@ -216,7 +216,9 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
     [nodes, edges, onNodesChange, onEdgesChange],
   );
 
-  importFnRef.current = handleImportTemplate;
+  useLayoutEffect(() => {
+    importFnRef.current = handleImportTemplate;
+  });
 
   const stableImportFn = useCallback((template: CanvasTemplate) => {
     importFnRef.current(template);

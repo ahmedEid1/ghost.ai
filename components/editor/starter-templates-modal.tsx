@@ -118,7 +118,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
       </defs>
 
       {/* Background */}
-      <rect width={PW} height={PH} fill="#080809" />
+      <rect width={PW} height={PH} style={{ fill: "var(--bg-base)" }} />
       <rect width={PW} height={PH} fill={`url(#dots-${tid})`} />
 
       {/* Edges — drawn below nodes */}
@@ -279,8 +279,8 @@ function TemplateCard({ template, onImport }: TemplateCardProps) {
             {template.name}
           </h3>
           <p
-            className="text-xs leading-relaxed"
-            style={{ color: "var(--text-secondary)", lineClamp: 2 } as React.CSSProperties}
+            className="line-clamp-2 text-xs leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
           >
             {template.description}
           </p>
