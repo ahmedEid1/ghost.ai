@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type Project } from "@/lib/mock-projects";
+import { type Project } from "@/lib/types";
 
 // ── Create Project Dialog ─────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ interface CreateProjectDialogProps {
   projectName: string;
   slug: string;
   isSubmitting: boolean;
+  error: string | null;
   onProjectNameChange: (name: string) => void;
   onCreate: () => void;
   onClose: () => void;
@@ -30,6 +31,7 @@ export function CreateProjectDialog({
   projectName,
   slug,
   isSubmitting,
+  error,
   onProjectNameChange,
   onCreate,
   onClose,
@@ -59,13 +61,15 @@ export function CreateProjectDialog({
             disabled={isSubmitting}
             className="bg-surface text-text-primary"
           />
-          {projectName.trim() && !slug ? (
+          {error ? (
+            <p className="text-xs text-state-error px-0.5">{error}</p>
+          ) : projectName.trim() && !slug ? (
             <p className="text-xs text-state-error px-0.5">
               Name must contain at least one letter or number.
             </p>
           ) : (
             <p className="text-xs text-text-muted px-0.5">
-              Slug:{" "}
+              Room slug preview:{" "}
               <span className="font-mono text-text-secondary">
                 {slug || "—"}
               </span>
@@ -103,6 +107,7 @@ interface RenameProjectDialogProps {
   projectName: string;
   slug: string;
   isSubmitting: boolean;
+  error: string | null;
   onProjectNameChange: (name: string) => void;
   onRename: () => void;
   onClose: () => void;
@@ -114,6 +119,7 @@ export function RenameProjectDialog({
   projectName,
   slug,
   isSubmitting,
+  error,
   onProjectNameChange,
   onRename,
   onClose,
@@ -128,6 +134,12 @@ export function RenameProjectDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-text-primary">Rename Project</DialogTitle>
+          {project && (
+            <DialogDescription className="text-text-muted">
+              Current name:{" "}
+              <span className="text-text-secondary font-medium">{project.name}</span>
+            </DialogDescription>
+          )}
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
           <Input
@@ -148,13 +160,9 @@ export function RenameProjectDialog({
             disabled={isSubmitting}
             className="bg-surface text-text-primary"
           />
-          {project && (
-            <p className="text-xs text-text-faint px-0.5">
-              Current:{" "}
-              <span className="font-mono">{project.slug}</span>
-            </p>
-          )}
-          {projectName.trim() && !slug ? (
+          {error ? (
+            <p className="text-xs text-state-error px-0.5">{error}</p>
+          ) : projectName.trim() && !slug ? (
             <p className="text-xs text-state-error px-0.5">
               Name must contain at least one letter or number.
             </p>
@@ -196,6 +204,7 @@ interface DeleteProjectDialogProps {
   open: boolean;
   project: Project | null;
   isSubmitting: boolean;
+  error: string | null;
   onDelete: () => void;
   onClose: () => void;
 }
@@ -204,6 +213,7 @@ export function DeleteProjectDialog({
   open,
   project,
   isSubmitting,
+  error,
   onDelete,
   onClose,
 }: DeleteProjectDialogProps) {
@@ -223,6 +233,9 @@ export function DeleteProjectDialog({
             ? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
+        {error && (
+          <p className="text-xs text-state-error">{error}</p>
+        )}
         <DialogFooter>
           <Button
             variant="ghost"

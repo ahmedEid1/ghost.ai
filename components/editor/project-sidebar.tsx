@@ -1,9 +1,10 @@
 "use client";
 
-import { X, Plus, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { X, Plus, Pencil, Trash2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type Project } from "@/lib/mock-projects";
+import { type Project } from "@/lib/types";
 
 interface ProjectSidebarProps {
   isOpen: boolean;
@@ -12,24 +13,45 @@ interface ProjectSidebarProps {
   onOpenCreateDialog: () => void;
   onRenameProject: (project: Project) => void;
   onDeleteProject: (project: Project) => void;
+  onShareProject: (project: Project) => void;
 }
 
 function ProjectItem({
   project,
+  onClose,
   onRename,
   onDelete,
+  onShare,
 }: {
   project: Project;
+  onClose: () => void;
   onRename: (project: Project) => void;
   onDelete: (project: Project) => void;
+  onShare: (project: Project) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 rounded-xl px-2 py-2 hover:bg-subtle min-w-0 transition-colors">
-      <span className="flex-1 text-sm text-text-primary truncate min-w-0">
+    <div className="flex items-center gap-1 rounded-xl hover:bg-subtle min-w-0 transition-colors">
+      <Link
+        href={`/editor/${project.id}`}
+        onClick={onClose}
+        className="flex-1 truncate px-2 py-2 text-sm text-text-primary min-w-0"
+      >
         {project.name}
-      </span>
-      {project.owned && (
-        <div className="flex items-center gap-0.5 shrink-0">
+      </Link>
+      {project.isOwner && (
+        <div className="flex shrink-0 items-center gap-0.5 pr-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare(project);
+            }}
+            className="h-7 w-7 text-text-muted hover:text-text-primary"
+            aria-label={`Share ${project.name}`}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -67,9 +89,10 @@ export function ProjectSidebar({
   onOpenCreateDialog,
   onRenameProject,
   onDeleteProject,
+  onShareProject,
 }: ProjectSidebarProps) {
-  const myProjects = projects.filter((p) => p.owned);
-  const sharedProjects = projects.filter((p) => !p.owned);
+  const myProjects = projects.filter((p) => p.isOwner);
+  const sharedProjects = projects.filter((p) => !p.isOwner);
 
   return (
     <>
@@ -131,8 +154,10 @@ export function ProjectSidebar({
                     <ProjectItem
                       key={project.id}
                       project={project}
+                      onClose={onClose}
                       onRename={onRenameProject}
                       onDelete={onDeleteProject}
+                      onShare={onShareProject}
                     />
                   ))}
                 </div>
@@ -155,8 +180,10 @@ export function ProjectSidebar({
                     <ProjectItem
                       key={project.id}
                       project={project}
+                      onClose={onClose}
                       onRename={onRenameProject}
                       onDelete={onDeleteProject}
+                      onShare={onShareProject}
                     />
                   ))}
                 </div>
