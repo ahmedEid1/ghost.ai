@@ -198,7 +198,7 @@ export function CanvasEdge({
     [id, setEdges],
   );
 
-  const enterEdit = useCallback((e: React.MouseEvent) => {
+  const enterEdit = useCallback((e: React.UIEvent) => {
     e.stopPropagation();
     setIsEditing(true);
   }, []);
@@ -326,6 +326,10 @@ interface MidpointHandleProps {
 
 function MidpointHandle({ x, y, hasCustomCenter, screenToFlowPosition, onDrag, onReset }: MidpointHandleProps) {
   const [dragging, setDragging] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  // Remove any lingering listeners if the component unmounts mid-drag
+  useEffect(() => () => { cleanupRef.current?.(); }, []);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -340,6 +344,12 @@ function MidpointHandle({ x, y, hasCustomCenter, screenToFlowPosition, onDrag, o
       };
       const onUp = () => {
         setDragging(false);
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+        cleanupRef.current = null;
+      };
+      // Store removal logic so unmount can run the same cleanup
+      cleanupRef.current = () => {
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
       };
@@ -436,8 +446,11 @@ function EdgeStyleToolbar({
           <TbDivider />
           {EDGE_COLORS.map((c) => (
             <button
+              type="button"
               key={c.value}
               title={c.label}
+              aria-label={c.label}
+              aria-pressed={c.value === color}
               onClick={() => onUpdate({ color: c.value })}
               style={{
                 width: 14, height: 14,
@@ -492,7 +505,10 @@ function TbBtn({ active, title, onClick, children }: {
 }) {
   return (
     <button
+      type="button"
       title={title}
+      aria-label={title}
+      aria-pressed={active}
       onClick={onClick}
       style={{
         width: 26, height: 26,
@@ -576,7 +592,7 @@ interface EdgeLabelAreaProps {
   isSelected:  boolean;
   isCustomT:   boolean;
   screenToFlowPosition: (pos: { x: number; y: number }) => { x: number; y: number };
-  onEnterEdit: (e: React.MouseEvent) => void;
+  onEnterEdit: (e: React.UIEvent) => void;
   onSave:      (label: string) => void;
   onDiscard:   () => void;
   onDragMove:  (flowX: number, flowY: number) => void;
@@ -644,10 +660,15 @@ function EdgeLabelArea({
   if (label) {
     return (
       <div
+        role="button"
+        tabIndex={0}
         style={{ ...pos, cursor: isSelected ? "grab" : "default" }}
         className="nodrag nopan"
         onMouseDown={handleMouseDown}
         onDoubleClick={onEnterEdit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onEnterEdit(e); }
+        }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <span
@@ -666,7 +687,9 @@ function EdgeLabelArea({
           {/* Reset to midpoint — only shown when label has been moved */}
           {isSelected && isCustomT && (
             <button
+              type="button"
               title="Reset label to midpoint"
+              aria-label="Reset label to midpoint"
               onClick={(e) => { e.stopPropagation(); onReset(); }}
               onMouseDown={(e) => e.stopPropagation()}
               style={{
@@ -691,10 +714,15 @@ function EdgeLabelArea({
   if (isActive) {
     return (
       <div
+        role="button"
+        tabIndex={0}
         style={{ ...pos, cursor: isSelected ? "grab" : "default" }}
         className="nodrag nopan"
         onMouseDown={handleMouseDown}
         onDoubleClick={onEnterEdit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onEnterEdit(e); }
+        }}
       >
         <span
           className="rounded-full px-2 py-0.5 text-xs"
@@ -763,6 +791,7 @@ function EdgeLabelEditor({ initialLabel, onSave, onDiscard }: EdgeLabelEditorPro
       onMouseDown={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
+      aria-label="Edge label"
       className="nodrag nopan rounded-full border px-2 py-0.5 text-center text-xs font-medium outline-none"
       style={{
         background:  "var(--bg-elevated)",
