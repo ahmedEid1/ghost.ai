@@ -10,12 +10,14 @@ import {
   DeleteProjectDialog,
 } from "@/components/editor/project-dialogs";
 import { useProjectDialogs } from "@/hooks/use-project-dialogs";
+import { type Project } from "@/lib/types";
 
 interface EditorShellProps {
   children: React.ReactNode;
+  initialProjects: Project[];
 }
 
-export function EditorShell({ children }: EditorShellProps) {
+export function EditorShell({ children, initialProjects }: EditorShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
@@ -24,6 +26,7 @@ export function EditorShell({ children }: EditorShellProps) {
     targetProject,
     projectName,
     isSubmitting,
+    error,
     slug,
     setProjectName,
     openCreateDialog,
@@ -33,7 +36,7 @@ export function EditorShell({ children }: EditorShellProps) {
     handleCreate,
     handleRename,
     handleDelete,
-  } = useProjectDialogs();
+  } = useProjectDialogs(initialProjects);
 
   function openSidebar() {
     setIsSidebarOpen(true);
@@ -61,6 +64,7 @@ export function EditorShell({ children }: EditorShellProps) {
           projectName={projectName}
           slug={slug}
           isSubmitting={isSubmitting}
+          error={activeDialog === "create" ? error : null}
           onProjectNameChange={setProjectName}
           onCreate={handleCreate}
           onClose={closeDialog}
@@ -71,6 +75,7 @@ export function EditorShell({ children }: EditorShellProps) {
           projectName={projectName}
           slug={slug}
           isSubmitting={isSubmitting}
+          error={activeDialog === "rename" ? error : null}
           onProjectNameChange={setProjectName}
           onRename={handleRename}
           onClose={closeDialog}
@@ -79,6 +84,7 @@ export function EditorShell({ children }: EditorShellProps) {
           open={activeDialog === "delete"}
           project={targetProject}
           isSubmitting={isSubmitting}
+          error={activeDialog === "delete" ? error : null}
           onDelete={handleDelete}
           onClose={closeDialog}
         />

@@ -7,7 +7,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Feature 04 — Project Dialogs: editor home screen, Create/Rename/Delete project dialogs, sidebar actions.
+- Feature 07 — Wire Editor Home: project list fetched server-side, real API calls for create/rename/delete.
 
 ## Completed
 
@@ -16,6 +16,8 @@ Update this file whenever the current phase, active feature, or implementation s
 - **Feature 03 — Auth**: `@clerk/ui` installed; `ClerkProvider` wraps root layout with `dark` theme from `@clerk/ui/themes` and CSS-variable overrides; `proxy.ts` at project root uses `clerkMiddleware` + `createRouteMatcher` to protect all routes except sign-in and sign-up; sign-in and sign-up pages use Clerk prebuilt components inside a 2-panel layout (logo/tagline left, form right on large screens; stacked on small screens); root `page.tsx` redirects authenticated users to `/editor` and unauthenticated users to `/sign-in`; `UserButton` added to `EditorNavbar` right section.
 - **Feature 04 — Project Dialogs**: Editor home screen with heading, description, and Create/Open buttons; `useProjectDialogs` hook in `hooks/` managing dialog, form, and loading state; Create, Rename, and Delete project dialogs in `components/editor/project-dialogs.tsx`; `ProjectDialogsContext` threads `openCreateDialog` and `openSidebar` from `EditorShell` to the editor page; `ProjectSidebar` updated with mock project list, Rename/Delete actions for owned projects (hidden for shared), mobile backdrop scrim; `lib/mock-projects.ts` holds `Project` type, mock data, and `toSlug` utility.
 - **Feature 05 — Prisma**: `prisma/schema.prisma` with `Project` (ownerId, name, description, status enum DRAFT/ACTIVE/ARCHIVED, canvasJsonPath, timestamps, indexes on ownerId and ownerId+createdAt) and `ProjectCollaborator` (project FK with cascade delete, collaboratorEmail, createdAt, unique on projectId+email, indexes on email and createdAt) models; `lib/prisma.ts` singleton branching by `DATABASE_URL` (Accelerate via `accelerateUrl`+`withAccelerate()` for `prisma+postgres://` URLs, direct `PrismaPg` adapter otherwise), cached on `globalThis` in development; migration `20260504154525_init` applied and tables verified in database.
+- **Feature 06 — Project APIs**: `GET /api/projects` lists owned + shared projects (shared via collaboratorEmail lookup), sorted by createdAt desc, with `isOwner` flag; `POST /api/projects` creates a project defaulting name to "Untitled Project"; `PATCH /api/projects/[projectId]` updates name/description (owner only); `DELETE /api/projects/[projectId]` deletes project (owner only); all routes enforce 401 Unauthorized for unauthenticated users, 403 Forbidden for non-owners on mutations, 400 for invalid input, 500 with console logging for unexpected errors; build verified clean.
+- **Feature 07 — Wire Editor Home**: `app/editor/layout.tsx` is now a server component that fetches owned + shared projects from Prisma and passes them as `initialProjects` to `EditorShell`; `lib/types.ts` defines the canonical `Project` interface (`id, name, description, status, isOwner`); `toSlug` moved to `lib/utils.ts`; `hooks/use-project-actions.ts` wraps `POST /api/projects`, `PATCH /api/projects/:id`, and `DELETE /api/projects/:id` with per-operation loading state, router navigation after create (→ `/editor/:id`) and delete (→ `/editor`); `hooks/use-project-dialogs.ts` replaced mock data with real API calls via `useProjectActions`, adds per-dialog `error` state; all three dialogs wired to display API errors inline and reflect loading; sidebar uses `isOwner` (was `owned`); build verified clean.
 
 ## In Progress
 
@@ -23,7 +25,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Feature 06 (TBD per feature-specs).
+- Feature 08 (TBD per feature-specs).
 
 ## Open Questions
 

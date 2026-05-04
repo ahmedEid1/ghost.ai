@@ -1,32 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { type Project, MOCK_PROJECTS, toSlug } from "@/lib/mock-projects";
+import { type Project } from "@/lib/types";
+import { toSlug } from "@/lib/utils";
+import { useProjectActions } from "@/hooks/use-project-actions";
 
 export type DialogType = "create" | "rename" | "delete" | null;
 
-export function useProjectDialogs() {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
+export function useProjectDialogs(initialProjects: Project[]) {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [targetProject, setTargetProject] = useState<Project | null>(null);
   const [projectName, setProjectName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { createProject, updateProject, deleteProject, isCreating, isUpdating, isDeleting } =
+    useProjectActions();
 
   function openCreateDialog() {
     setProjectName("");
     setTargetProject(null);
+    setError(null);
     setActiveDialog("create");
   }
 
   function openRenameDialog(project: Project) {
     setProjectName(project.name);
     setTargetProject(project);
+    setError(null);
     setActiveDialog("rename");
   }
 
   function openDeleteDialog(project: Project) {
     setTargetProject(project);
     setProjectName("");
+    setError(null);
     setActiveDialog("delete");
   }
 
@@ -34,23 +42,20 @@ export function useProjectDialogs() {
     setActiveDialog(null);
     setTargetProject(null);
     setProjectName("");
-    setIsSubmitting(false);
+    setError(null);
   }
 
   async function handleCreate() {
     const slug = toSlug(projectName);
     if (!projectName.trim() || !slug) return;
-    setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: projectName.trim(),
-      slug,
-      owned: true,
-      updatedAt: new Date().toISOString().split("T")[0],
-    };
-    setProjects((prev) => [newProject, ...prev]);
-    closeDialog();
+    setError(null);
+    try {
+      const created = await createProject({ name: projectName.trim() });
+      setProjects((prev) => [created, ...prev]);
+      closeDialog();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create project");
+    }
   }
 
   async function handleRename() {
@@ -61,24 +66,30 @@ export function useProjectDialogs() {
       projectName.trim() === targetProject.name
     )
       return;
-    setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === targetProject.id
-          ? { ...p, name: projectName.trim(), slug: toSlug(projectName) }
-          : p
-      )
-    );
-    closeDialog();
+    setError(null);
+    try {
+      const updated = await updateProject(targetProject.id, {
+        name: projectName.trim(),
+      });
+      setProjects((prev) =>
+        prev.map((p) => (p.id === targetProject.id ? updated : p))
+      );
+      closeDialog();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to rename project");
+    }
   }
 
   async function handleDelete() {
     if (!targetProject) return;
-    setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setProjects((prev) => prev.filter((p) => p.id !== targetProject.id));
-    closeDialog();
+    setError(null);
+    try {
+      await deleteProject(targetProject.id);
+      setProjects((prev) => prev.filter((p) => p.id !== targetProject.id));
+      closeDialog();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete project");
+    }
   }
 
   return {
@@ -86,7 +97,8 @@ export function useProjectDialogs() {
     activeDialog,
     targetProject,
     projectName,
-    isSubmitting,
+    isSubmitting: isCreating || isUpdating || isDeleting,
+    error,
     slug: toSlug(projectName),
     setProjectName,
     openCreateDialog,

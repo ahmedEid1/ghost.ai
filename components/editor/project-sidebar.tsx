@@ -3,7 +3,7 @@
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type Project } from "@/lib/mock-projects";
+import { type Project } from "@/lib/types";
 
 interface ProjectSidebarProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ function ProjectItem({
       <span className="flex-1 text-sm text-text-primary truncate min-w-0">
         {project.name}
       </span>
-      {project.owned && (
+      {project.isOwner && (
         <div className="flex items-center gap-0.5 shrink-0">
           <Button
             variant="ghost"
@@ -68,8 +68,8 @@ export function ProjectSidebar({
   onRenameProject,
   onDeleteProject,
 }: ProjectSidebarProps) {
-  const myProjects = projects.filter((p) => p.owned);
-  const sharedProjects = projects.filter((p) => !p.owned);
+  const myProjects = projects.filter((p) => p.isOwner);
+  const sharedProjects = projects.filter((p) => !p.isOwner);
 
   return (
     <>
