@@ -1,13 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-
-const PROJECT_SELECT = {
-  id: true,
-  name: true,
-  description: true,
-  status: true,
-  createdAt: true,
-} as const;
+import { getUserProjects } from "@/lib/get-projects";
 
 export async function GET() {
   const { userId } = await auth();
@@ -16,33 +9,10 @@ export async function GET() {
   }
 
   const user = await currentUser();
-  const userEmail = user?.emailAddresses[0]?.emailAddress ?? null;
+  const userEmails = (user?.emailAddresses ?? []).map((e) => e.emailAddress);
 
   try {
-    const [owned, shared] = await Promise.all([
-      prisma.project.findMany({
-        where: { ownerId: userId },
-        orderBy: { createdAt: "desc" },
-        select: PROJECT_SELECT,
-      }),
-      userEmail
-        ? prisma.project.findMany({
-            where: {
-              collaborators: { some: { collaboratorEmail: userEmail } },
-            },
-            orderBy: { createdAt: "desc" },
-            select: PROJECT_SELECT,
-          })
-        : Promise.resolve([]),
-    ]);
-
-    const projects = [
-      ...owned.map((p) => ({ ...p, isOwner: true as const })),
-      ...shared.map((p) => ({ ...p, isOwner: false as const })),
-    ]
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .map(({ createdAt: _createdAt, ...rest }) => rest);
-
+    const projects = await getUserProjects(userId, userEmails);
     return Response.json({ projects });
   } catch (error) {
     console.error("[GET /api/projects]", error);

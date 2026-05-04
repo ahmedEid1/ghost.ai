@@ -69,7 +69,7 @@ export function CreateProjectDialog({
             </p>
           ) : (
             <p className="text-xs text-text-muted px-0.5">
-              Room ID preview:{" "}
+              Room slug preview:{" "}
               <span className="font-mono text-text-secondary">
                 {slug || "—"}
               </span>

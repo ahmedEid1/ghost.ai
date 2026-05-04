@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getUserProjects } from "@/lib/get-projects";
 import { EditorShell } from "@/components/editor/editor-shell";
 import { type Project } from "@/lib/types";
 
@@ -9,37 +9,9 @@ async function fetchProjects(): Promise<Project[]> {
   if (!userId) redirect("/sign-in");
 
   const user = await currentUser();
-  const userEmail = user?.emailAddresses[0]?.emailAddress ?? null;
+  const userEmails = (user?.emailAddresses ?? []).map((e) => e.emailAddress);
 
-  const SELECT = {
-    id: true,
-    name: true,
-    description: true,
-    status: true,
-    createdAt: true,
-  } as const;
-
-  const [owned, shared] = await Promise.all([
-    prisma.project.findMany({
-      where: { ownerId: userId },
-      orderBy: { createdAt: "desc" },
-      select: SELECT,
-    }),
-    userEmail
-      ? prisma.project.findMany({
-          where: { collaborators: { some: { collaboratorEmail: userEmail } } },
-          orderBy: { createdAt: "desc" },
-          select: SELECT,
-        })
-      : Promise.resolve([]),
-  ]);
-
-  return [
-    ...owned.map((p) => ({ ...p, isOwner: true as const })),
-    ...shared.map((p) => ({ ...p, isOwner: false as const })),
-  ]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .map(({ createdAt: _c, ...rest }) => rest);
+  return getUserProjects(userId, userEmails);
 }
 
 export default async function EditorLayout({

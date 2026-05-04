@@ -32,8 +32,15 @@ export async function PATCH(
       { status: 400 }
     );
   }
-  if (name !== undefined && typeof name !== "string") {
-    return Response.json({ error: "name must be a string" }, { status: 400 });
+  let trimmedName: string | undefined;
+  if (name !== undefined) {
+    if (typeof name !== "string" || !name.trim()) {
+      return Response.json(
+        { error: "name must be a non-empty string" },
+        { status: 400 }
+      );
+    }
+    trimmedName = name.trim();
   }
   if (description !== undefined && typeof description !== "string") {
     return Response.json(
@@ -58,7 +65,7 @@ export async function PATCH(
     const updated = await prisma.project.update({
       where: { id: projectId },
       data: {
-        ...(typeof name === "string" ? { name } : {}),
+        ...(trimmedName !== undefined ? { name: trimmedName } : {}),
         ...(typeof description === "string" ? { description } : {}),
       },
       select: { id: true, name: true, description: true, status: true },
