@@ -50,28 +50,31 @@ export async function PATCH(
   }
 
   try {
-    const existing = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { ownerId: true },
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findUnique({
+        where: { id: projectId },
+        select: { ownerId: true },
+      });
+
+      if (!existing) return { error: "Not Found" as const, status: 404 as const };
+      if (existing.ownerId !== userId) return { error: "Forbidden" as const, status: 403 as const };
+
+      const updated = await tx.project.update({
+        where: { id: projectId },
+        data: {
+          ...(trimmedName !== undefined ? { name: trimmedName } : {}),
+          ...(typeof description === "string" ? { description } : {}),
+        },
+        select: { id: true, name: true, description: true, status: true },
+      });
+
+      return { data: updated };
     });
 
-    if (!existing) {
-      return Response.json({ error: "Not Found" }, { status: 404 });
+    if ("error" in result) {
+      return Response.json({ error: result.error }, { status: result.status });
     }
-    if (existing.ownerId !== userId) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const updated = await prisma.project.update({
-      where: { id: projectId },
-      data: {
-        ...(trimmedName !== undefined ? { name: trimmedName } : {}),
-        ...(typeof description === "string" ? { description } : {}),
-      },
-      select: { id: true, name: true, description: true, status: true },
-    });
-
-    return Response.json({ ...updated, isOwner: true });
+    return Response.json({ ...result.data, isOwner: true });
   } catch (error) {
     console.error("[PATCH /api/projects/:projectId]", error);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
@@ -90,20 +93,22 @@ export async function DELETE(
   const { projectId } = await params;
 
   try {
-    const existing = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { ownerId: true },
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findUnique({
+        where: { id: projectId },
+        select: { ownerId: true },
+      });
+
+      if (!existing) return { error: "Not Found" as const, status: 404 as const };
+      if (existing.ownerId !== userId) return { error: "Forbidden" as const, status: 403 as const };
+
+      await tx.project.delete({ where: { id: projectId } });
+      return { success: true as const };
     });
 
-    if (!existing) {
-      return Response.json({ error: "Not Found" }, { status: 404 });
+    if ("error" in result) {
+      return Response.json({ error: result.error }, { status: result.status });
     }
-    if (existing.ownerId !== userId) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    await prisma.project.delete({ where: { id: projectId } });
-
     return Response.json({ message: "Project deleted" });
   } catch (error) {
     console.error("[DELETE /api/projects/:projectId]", error);

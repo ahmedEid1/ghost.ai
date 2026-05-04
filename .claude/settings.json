@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr create --title 'feat: project API routes and editor home wiring \\(Features 06 & 07\\)' --body ' *)",
+      "Bash(git commit -m ' *)",
+      "Bash(Get-ChildItem -Path \"e:\\\\2026\\\\building with AI\\\\gohst.ai\\\\app\\\\editor\" -Recurse)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(findstr -i \"clerk\\\\|shadcn\\\\|next\\\\|prisma\")",
+      "Bash(findstr /i \"clerk next prisma shadcn\")",
+      "Bash(npx shadcn@latest add avatar badge --yes)",
+      "Bash(gh pr *)"
+    ],
+    "additionalDirectories": [
+      "e:\\2026\\building with AI\\gohst.ai\\app\\editor",
+      "e:\\2026\\building with AI\\gohst.ai\\app\\api\\projects\\[projectId]\\collaborators"
+    ]
+  }
+}
