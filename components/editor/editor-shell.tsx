@@ -9,6 +9,7 @@ import {
   RenameProjectDialog,
   DeleteProjectDialog,
 } from "@/components/editor/project-dialogs";
+import { ShareDialog } from "@/components/editor/share-dialog";
 import { useProjectDialogs } from "@/hooks/use-project-dialogs";
 import { type Project } from "@/lib/types";
 
@@ -19,6 +20,7 @@ interface EditorShellProps {
 
 export function EditorShell({ children, initialProjects }: EditorShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [shareTarget, setShareTarget] = useState<Project | null>(null);
 
   const {
     projects,
@@ -56,6 +58,10 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
           onOpenCreateDialog={openCreateDialog}
           onRenameProject={openRenameDialog}
           onDeleteProject={openDeleteDialog}
+          onShareProject={(project) => {
+            setIsSidebarOpen(false);
+            setShareTarget(project);
+          }}
         />
         <main className="h-full pt-12">{children}</main>
 
@@ -88,6 +94,18 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
           onDelete={handleDelete}
           onClose={closeDialog}
         />
+
+        {shareTarget && (
+          <ShareDialog
+            open={shareTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) setShareTarget(null);
+            }}
+            projectId={shareTarget.id}
+            projectName={shareTarget.name}
+            isOwner={shareTarget.isOwner}
+          />
+        )}
       </div>
     </ProjectDialogsContext.Provider>
   );
