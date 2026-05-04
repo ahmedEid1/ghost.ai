@@ -605,6 +605,10 @@ function EdgeLabelArea({
   screenToFlowPosition, onEnterEdit, onSave, onDiscard,
   onDragMove, onDragEnd, onReset,
 }: EdgeLabelAreaProps) {
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => { cleanupRef.current?.(); }, []);
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button !== 0 || isEditing) return;
@@ -625,14 +629,18 @@ function EdgeLabelArea({
       };
 
       const onUp = (ev: MouseEvent) => {
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
+        cleanupRef.current?.();
+        cleanupRef.current = null;
         if (moved) {
           const pos = screenToFlowPosition({ x: ev.clientX, y: ev.clientY });
           onDragEnd(pos.x, pos.y);
         }
       };
 
+      cleanupRef.current = () => {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      };
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
     },
