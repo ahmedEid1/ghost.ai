@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Home, Share2, BrainCircuit, MoreHorizontal } from "lucide-react";
+import { ChevronRight, Home, Share2, BrainCircuit, MoreHorizontal, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ProjectStatus } from "@/lib/types";
 
@@ -11,6 +11,7 @@ interface WorkspaceNavbarProps {
   isAiSidebarOpen: boolean;
   onAiSidebarToggle: () => void;
   onShareOpen: () => void;
+  onStarterTemplatesOpen: () => void;
 }
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
@@ -31,6 +32,7 @@ export function WorkspaceNavbar({
   isAiSidebarOpen,
   onAiSidebarToggle,
   onShareOpen,
+  onStarterTemplatesOpen,
 }: WorkspaceNavbarProps) {
   return (
     <header className="flex h-10 shrink-0 items-center justify-between border-b border-border-default bg-surface px-3">
@@ -54,6 +56,15 @@ export function WorkspaceNavbar({
 
       {/* Right: actions */}
       <div className="flex shrink-0 items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-text-muted hover:text-text-primary"
+          onClick={onStarterTemplatesOpen}
+          aria-label="Open starter templates"
+        >
+          <LayoutTemplate className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
