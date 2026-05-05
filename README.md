@@ -108,8 +108,6 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 
 ### Collaborative Canvas
 
-![Canvas with live presence](docs/screenshot-presence.png)
-
 - React Flow canvas synced in real time via Liveblocks — all users see the same state instantly
 - Live cursors with user names and a Ghost AI presence indicator
 - Shapes, colors, inline labels, edge routing, keyboard shortcuts, undo/redo, multi-select, autosave, and restore
@@ -118,29 +116,25 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 
 ### AI Architecture Generation
 
-![Ghost AI generating an architecture](docs/screenshot-ai-generating.png)
-
 - **Plain-English prompt** → Claude generates a validated action plan (add / move / resize / update / delete nodes and edges) using `generateObject` with a Zod schema
 - **Durable execution** — design agent runs as a Trigger.dev task, not inside a request handler; retries on failure
 - **Real-time phase broadcast** — events sent to all room members as operations happen
 - **Pre-mutation validation** — dangling edge references, duplicate IDs, and dimension violations are caught before the canvas is touched
 
-![Completed architecture canvas](docs/screenshot-canvas-result.png)
-
 ### Technical Spec Generation
-
-![Technical spec sidebar](docs/screenshot-spec.png)
 
 - One-click Markdown spec export from the current canvas state via Claude
 - Specs stored in Vercel Blob and tracked in Postgres; previous versions accessible from the sidebar
 - Secure authenticated download route with project membership verification
 
 ### Access Control
+
 - Clerk authentication with owner and per-project collaborator roles
 - Server-side access checks on every mutation; three-layer workspace guard
 - Project sharing via invite link
 
 ### Design System
+
 - All color, motion, and shape as CSS custom properties in [`app/globals.css`](app/globals.css), surfaced through Tailwind v4 `@theme inline` — no hex literals or raw color families in components
 - Motion library: fade-in, slide variants, scale-in, pulse-ring, Ghost-flow — all honoring `prefers-reduced-motion`
 - Public showcase at [`/ui-showcase`](app/ui-showcase) — no auth required
