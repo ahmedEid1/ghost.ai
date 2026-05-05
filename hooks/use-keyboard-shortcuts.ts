@@ -7,6 +7,8 @@ interface KeyboardShortcutHandlers {
   onZoomOut?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onSave?: () => void;
+  onDelete?: () => void;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -22,6 +24,8 @@ export function useKeyboardShortcuts({
   onZoomOut,
   onUndo,
   onRedo,
+  onSave,
+  onDelete,
 }: KeyboardShortcutHandlers) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -31,6 +35,11 @@ export function useKeyboardShortcuts({
 
       if (isMod) {
         const key = e.key.toLowerCase();
+        if (key === "s") {
+          e.preventDefault();
+          onSave?.();
+          return;
+        }
         if (key === "z") {
           e.preventDefault();
           if (e.shiftKey) {
@@ -60,10 +69,15 @@ export function useKeyboardShortcuts({
           onZoomOut?.();
           return;
         }
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          onDelete?.();
+          return;
+        }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onZoomIn, onZoomOut, onUndo, onRedo]);
+  }, [onZoomIn, onZoomOut, onUndo, onRedo, onSave, onDelete]);
 }
