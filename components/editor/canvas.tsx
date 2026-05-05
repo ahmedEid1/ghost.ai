@@ -1,22 +1,25 @@
 "use client";
 
-import { Component, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   LiveblocksProvider,
   RoomProvider,
   ClientSideSuspense,
 } from "@liveblocks/react/suspense";
-import { useUndo, useRedo, useCanUndo, useCanRedo } from "@liveblocks/react";
-import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow";
+import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence } from "@liveblocks/react";
+import { useLiveblocksFlow } from "@liveblocks/react-flow";
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
   ConnectionMode,
+  SelectionMode,
   useReactFlow,
   type Node,
   type Connection,
+  type EdgeChange,
+  type NodeChange,
   type EdgeTypes,
   type NodeTypes,
   type ReactFlowInstance,
@@ -27,9 +30,14 @@ import "@liveblocks/react-flow/styles.css";
 
 import { CanvasNode } from "@/components/editor/canvas-node";
 import { CanvasEdge, type CanvasEdgeFlowType, type CanvasEdgeData } from "@/components/editor/canvas-edge";
+import { CanvasContextMenu } from "@/components/editor/canvas-context-menu";
 import { ShapePanel, DRAG_DATA_KEY, type ShapeDragPayload } from "@/components/editor/shape-panel";
 import { CanvasControls } from "@/components/editor/canvas-controls";
+import { CanvasSaveStatus } from "@/components/editor/canvas-save-status";
+import { PresenceCluster, type CollaboratorInfo } from "@/components/editor/presence-cluster";
+import { LiveCursorLayer, type CursorParticipant } from "@/components/editor/live-cursor-layer";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useCanvasAutosave } from "@/hooks/use-canvas-autosave";
 import { NODE_COLORS, type CanvasNodeData } from "@/types/canvas";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
 
@@ -59,6 +67,9 @@ const defaultEdgeOptions = {
     arrowEnd:    true,
   } satisfies CanvasEdgeData,
 };
+
+// Fallback accent color when cursorColor metadata is absent
+const FALLBACK_CURSOR_COLOR = "var(--accent-primary)";
 
 // --- Node ID generator ---
 
@@ -153,10 +164,19 @@ function CoordinateBridge({ screenToFlowRef }: CoordinateBridgeProps) {
 // --- React Flow canvas wired to Liveblocks ---
 
 interface CanvasFlowProps {
+  projectId: string;
+  currentUserId: string;
   onImportReady?: (fn: (template: CanvasTemplate) => void) => void;
 }
 
-function CanvasFlow({ onImportReady }: CanvasFlowProps) {
+interface ContextMenuState {
+  x: number;
+  y: number;
+  nodeIds: string[];
+  edgeIds: string[];
+}
+
+function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
     useLiveblocksFlow<CanvasFlowNode, CanvasEdgeFlowType>({
       suspense: true,
@@ -172,6 +192,200 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
   const redo = useRedo();
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
+
+  // Restore-on-empty: hydrate room from saved blob only when room is blank.
+  // A ref prevents re-running after the first attempt and blocks autosave during hydration.
+  const isRestoringRef = useRef(false);
+  const restoreAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (restoreAttemptedRef.current) return;
+    if (nodes.length > 0 || edges.length > 0) {
+      // Room already has collaborative state — skip restore entirely
+      restoreAttemptedRef.current = true;
+      return;
+    }
+
+    restoreAttemptedRef.current = true;
+
+    async function restore() {
+      isRestoringRef.current = true;
+      try {
+        const response = await fetch(`/api/projects/${projectId}/canvas`);
+        if (!response.ok) return;
+
+        const data: unknown = await response.json();
+        if (
+          typeof data !== "object" ||
+          data === null ||
+          !(data as Record<string, unknown>).hasSavedCanvas
+        ) return;
+
+        const canvas = (data as Record<string, unknown>).canvas as {
+          nodes: unknown[];
+          edges: unknown[];
+        } | null;
+
+        if (!canvas || !Array.isArray(canvas.nodes) || !Array.isArray(canvas.edges)) return;
+        if (canvas.nodes.length === 0 && canvas.edges.length === 0) return;
+
+        const addNodes = (canvas.nodes as CanvasFlowNode[]).map((n) => ({
+          type: "add" as const,
+          item: n,
+        }));
+        const addEdges = (canvas.edges as CanvasEdgeFlowType[]).map((e) => ({
+          type: "add" as const,
+          item: e,
+        }));
+
+        onNodesChange(addNodes);
+        onEdgesChange(addEdges);
+
+        setTimeout(() => {
+          flowInstanceRef.current?.fitView({ duration: 300, padding: 0.15 });
+        }, 80);
+      } catch (err) {
+        console.error("[CanvasFlow] restore failed", err);
+      } finally {
+        isRestoringRef.current = false;
+      }
+    }
+
+    void restore();
+  // Run only once on mount — intentionally empty dep array after guards
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave: debounced write to blob, disabled while restore is in flight
+  const [autosaveEnabled, setAutosaveEnabled] = useState(false);
+
+  useEffect(() => {
+    // Allow autosave only after the restore window has closed (~1.5s)
+    const timer = setTimeout(() => setAutosaveEnabled(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const { saveStatus, lastSavedAt, hasPendingChanges, triggerSave } = useCanvasAutosave({
+    projectId,
+    nodes,
+    edges,
+    enabled: autosaveEnabled && !isRestoringRef.current,
+  });
+
+  // Liveblocks presence
+  const updateMyPresence = useUpdateMyPresence();
+  const others = useOthers();
+
+  // Derive collaborator list (exclude self) for presence cluster
+  const collaborators: CollaboratorInfo[] = others
+    .filter((o) => o.id !== currentUserId)
+    .map((o) => ({
+      id: String(o.connectionId),
+      displayName: o.info?.displayName || "Collaborator",
+      avatarUrl: o.info?.avatarUrl || null,
+      cursorColor: o.info?.cursorColor || FALLBACK_CURSOR_COLOR,
+    }));
+
+  // Derive cursor participants (exclude self) for live cursor layer
+  const cursorParticipants: CursorParticipant[] = others
+    .filter((o) => o.id !== currentUserId)
+    .map((o) => ({
+      id: String(o.connectionId),
+      displayName: o.info?.displayName || "Collaborator",
+      cursorColor: o.info?.cursorColor || FALLBACK_CURSOR_COLOR,
+      cursor: o.presence?.cursor ?? null,
+    }));
+
+  // Cursor broadcasting handlers
+  const handlePaneMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const screenToFlow = screenToFlowRef.current;
+      if (!screenToFlow) return;
+      const flowPos = screenToFlow({ x: e.clientX, y: e.clientY });
+      updateMyPresence({ cursor: flowPos });
+    },
+    [updateMyPresence],
+  );
+
+  const handlePaneMouseLeave = useCallback(() => {
+    updateMyPresence({ cursor: null });
+  }, [updateMyPresence]);
+
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
+  // Cascading deletion: remove specified nodes + all their connected edges + specified edges
+  const handleDeleteItems = useCallback(
+    (nodeIds: string[], edgeIds: string[]) => {
+      const edgeIdsToRemove = new Set(edgeIds);
+      for (const nid of nodeIds) {
+        for (const edge of edges) {
+          if (edge.source === nid || edge.target === nid) {
+            edgeIdsToRemove.add(edge.id);
+          }
+        }
+      }
+      const nodeChanges: NodeChange<CanvasFlowNode>[] = nodeIds.map((id) => ({ type: "remove", id }));
+      const edgeChanges: EdgeChange<CanvasEdgeFlowType>[] = [...edgeIdsToRemove].map((id) => ({ type: "remove", id }));
+      if (nodeChanges.length > 0) onNodesChange(nodeChanges);
+      if (edgeChanges.length > 0) onEdgesChange(edgeChanges);
+    },
+    [edges, onNodesChange, onEdgesChange],
+  );
+
+  // Delete currently selected nodes and edges
+  const handleDeleteSelected = useCallback(() => {
+    const selectedNodeIds = nodes.filter((n) => n.selected).map((n) => n.id);
+    const selectedEdgeIds = edges.filter((e) => e.selected).map((e) => e.id);
+    if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0) return;
+    handleDeleteItems(selectedNodeIds, selectedEdgeIds);
+  }, [nodes, edges, handleDeleteItems]);
+
+  // Context menu handlers
+  const handleNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: CanvasFlowNode) => {
+      event.preventDefault();
+      const targetNodeIds = node.selected
+        ? nodes.filter((n) => n.selected).map((n) => n.id)
+        : [node.id];
+      const targetEdgeIds = node.selected
+        ? edges.filter((e) => e.selected).map((e) => e.id)
+        : [];
+      setContextMenu({ x: event.clientX, y: event.clientY, nodeIds: targetNodeIds, edgeIds: targetEdgeIds });
+    },
+    [nodes, edges],
+  );
+
+  const handleEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: CanvasEdgeFlowType) => {
+      event.preventDefault();
+      const targetEdgeIds = edge.selected
+        ? edges.filter((e) => e.selected).map((e) => e.id)
+        : [edge.id];
+      const targetNodeIds = edge.selected
+        ? nodes.filter((n) => n.selected).map((n) => n.id)
+        : [];
+      setContextMenu({ x: event.clientX, y: event.clientY, nodeIds: targetNodeIds, edgeIds: targetEdgeIds });
+    },
+    [nodes, edges],
+  );
+
+  const handlePaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      const selectedNodes = nodes.filter((n) => n.selected);
+      const selectedEdges = edges.filter((e) => e.selected);
+      if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
+      const { clientX, clientY } = event as React.MouseEvent;
+      setContextMenu({
+        x: clientX,
+        y: clientY,
+        nodeIds: selectedNodes.map((n) => n.id),
+        edgeIds: selectedEdges.map((e) => e.id),
+      });
+    },
+    [nodes, edges],
+  );
 
   // Zoom handlers
   const handleZoomIn = useCallback(() => {
@@ -234,6 +448,8 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
     onZoomOut: handleZoomOut,
     onUndo: undo,
     onRedo: redo,
+    onSave: triggerSave,
+    onDelete: handleDeleteSelected,
   });
 
   // Reconnect: replace the old edge with the same data but updated source/target
@@ -316,7 +532,15 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
         onReconnect={handleReconnect}
         onDelete={onDelete}
         onInit={handleInit}
+        onPaneMouseMove={handlePaneMouseMove}
+        onPaneMouseLeave={handlePaneMouseLeave}
+        onNodeContextMenu={handleNodeContextMenu}
+        onEdgeContextMenu={handleEdgeContextMenu}
+        onPaneContextMenu={handlePaneContextMenu}
         connectionMode={ConnectionMode.Loose}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
+        deleteKeyCode={null}
         fitView
         style={{ background: "var(--bg-base)" }}
       >
@@ -328,8 +552,18 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
           color="var(--text-primary)"
           style={{ opacity: 0.08 }}
         />
-        <Cursors />
+        <LiveCursorLayer participants={cursorParticipants} />
       </ReactFlow>
+
+      {contextMenu && (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          itemCount={contextMenu.nodeIds.length + contextMenu.edgeIds.length}
+          onDelete={() => handleDeleteItems(contextMenu.nodeIds, contextMenu.edgeIds)}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
 
       <ShapePanel />
       <CanvasControls
@@ -341,6 +575,13 @@ function CanvasFlow({ onImportReady }: CanvasFlowProps) {
         canUndo={canUndo}
         canRedo={canRedo}
       />
+      <CanvasSaveStatus
+        saveStatus={saveStatus}
+        lastSavedAt={lastSavedAt}
+        hasPendingChanges={hasPendingChanges}
+        onSave={triggerSave}
+      />
+      <PresenceCluster collaborators={collaborators} />
     </div>
   );
 }
@@ -391,11 +632,15 @@ export function Canvas({ roomId, onImportReady }: CanvasProps) {
     <LiveblocksProvider authEndpoint={authEndpoint}>
       <RoomProvider
         id={roomId}
-        initialPresence={{ cursor: null, isThinking: false }}
+        initialPresence={{ cursor: null, thinking: false }}
       >
         <CanvasErrorBoundary fallback={<CanvasError />}>
           <ClientSideSuspense fallback={<CanvasLoading />}>
-            <CanvasFlow onImportReady={onImportReady} />
+            <CanvasFlow
+              projectId={roomId}
+              currentUserId={user.id}
+              onImportReady={onImportReady}
+            />
           </ClientSideSuspense>
         </CanvasErrorBoundary>
       </RoomProvider>
