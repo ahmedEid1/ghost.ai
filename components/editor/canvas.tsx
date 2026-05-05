@@ -33,6 +33,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useCanvasAutosave } from "@/hooks/use-canvas-autosave";
 import { NODE_COLORS, type CanvasNodeData } from "@/types/canvas";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
+import { computeOrganizedLayout, type LayoutDirection } from "@/lib/canvas-layout";
 
 // --- Canvas-specific node and edge types ---
 
@@ -407,6 +408,76 @@ function CanvasFlow({ projectId, currentUserId, onImportReady, onAiStatusEvent, 
     flowInstanceRef.current?.fitView({ duration: 300, padding: 0.1 });
   }, []);
 
+  // Organize: lay out all nodes in the chosen direction. Commits node positions
+  // through onNodesChange and resets edge bend points (centerX/centerY) and
+  // label positions (labelT) — those are stored as absolute canvas coordinates
+  // and would otherwise leave edges zig-zagging through the old layout.
+  const handleOrganize = useCallback(
+    (direction: LayoutDirection) => {
+      if (nodes.length === 0) return;
+
+      const layout = computeOrganizedLayout(
+        nodes.map((n) => ({
+          id: n.id,
+          width: n.width ?? null,
+          height: n.height ?? null,
+          measured: n.measured ?? null,
+        })),
+        edges.map((e) => ({ source: e.source, target: e.target })),
+        direction,
+      );
+
+      const nodeChanges = nodes
+        .map((n) => {
+          const next = layout.get(n.id);
+          if (!next) return null;
+          if (n.position.x === next.x && n.position.y === next.y) return null;
+          return {
+            id: n.id,
+            type: "position" as const,
+            position: next,
+            dragging: false,
+          };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== null);
+
+      if (nodeChanges.length > 0) onNodesChange(nodeChanges);
+
+      // Clear stale bend points and label positions so smooth-step routing
+      // recomputes against the new node positions. Use remove+add (same pattern
+      // as handleReconnect) so Liveblocks Storage syncs the cleared fields.
+      const dirtyEdges = edges.filter((e) => {
+        const d = e.data;
+        return d !== undefined && (
+          d.centerX !== undefined ||
+          d.centerY !== undefined ||
+          d.labelT !== undefined
+        );
+      });
+
+      if (dirtyEdges.length > 0) {
+        const edgeChanges = dirtyEdges.flatMap((e) => {
+          const { centerX: _cx, centerY: _cy, labelT: _lt, ...restData } = e.data ?? {};
+          const cleaned: CanvasEdgeFlowType = {
+            ...e,
+            data: restData as CanvasEdgeData,
+            selected: false,
+          };
+          return [
+            { type: "remove" as const, id: e.id },
+            { type: "add" as const, item: cleaned },
+          ];
+        });
+        onEdgesChange(edgeChanges);
+      }
+
+      setTimeout(() => {
+        flowInstanceRef.current?.fitView({ duration: 400, padding: 0.15 });
+      }, 80);
+    },
+    [nodes, edges, onNodesChange, onEdgesChange],
+  );
+
   const handleInit = useCallback((instance: ReactFlowInstance<CanvasFlowNode, CanvasEdgeFlowType>) => {
     flowInstanceRef.current = instance;
   }, []);
@@ -572,8 +643,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady, onAiStatusEvent, 
           variant={BackgroundVariant.Dots}
           gap={24}
           size={1}
-          color="rgb(226 232 240)"
-          style={{ opacity: 0.08 }}
+          color="var(--canvas-grid-default)"
         />
         <LiveCursorLayer participants={cursorParticipants} />
       </ReactFlow>
@@ -597,6 +667,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady, onAiStatusEvent, 
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onOrganize={handleOrganize}
       />
       <CanvasSaveStatus
         saveStatus={saveStatus}

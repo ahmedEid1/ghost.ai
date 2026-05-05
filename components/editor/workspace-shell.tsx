@@ -19,6 +19,7 @@ import type { AiStatusEvent } from "@/liveblocks.config";
 import { parseAiStatusEvent } from "@/types/ai-status";
 import { useAiActivityState } from "@/hooks/use-ai-activity-state";
 import { useProjectActions } from "@/hooks/use-project-actions";
+import { useProjectDialogsContext } from "@/components/editor/project-dialogs-context";
 
 interface WorkspaceProject {
   id: string;
@@ -42,6 +43,7 @@ export function WorkspaceShell({ project }: WorkspaceShellProps) {
 
   const { state: aiActivity, handleStatusEvent } = useAiActivityState(project.id);
   const { updateProject } = useProjectActions();
+  const { syncProject } = useProjectDialogsContext();
 
   const handleAiStatusEvent = useCallback(
     (event: AiStatusEvent) => {
@@ -53,14 +55,16 @@ export function WorkspaceShell({ project }: WorkspaceShellProps) {
 
   const handleStatusChange = useCallback(
     async (status: ProjectStatus) => {
+      const previousStatus = projectStatus;
       setProjectStatus(status);
       try {
-        await updateProject(project.id, { status });
+        const updated = await updateProject(project.id, { status });
+        syncProject(updated);
       } catch {
-        setProjectStatus(projectStatus);
+        setProjectStatus(previousStatus);
       }
     },
-    [project.id, updateProject, projectStatus],
+    [project.id, projectStatus, syncProject, updateProject],
   );
 
   const handleAiToggle = useCallback(() => {

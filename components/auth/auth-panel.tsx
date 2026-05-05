@@ -1,4 +1,5 @@
-import { BrainCircuit, FileCode, GitBranch, Ghost, Sparkles, Users } from "lucide-react";
+import Link from "next/link";
+import { BrainCircuit, FileCode, GitBranch, Ghost, Sparkles, Users, Palette } from "lucide-react";
 
 const proofPoints = [
   { Icon: BrainCircuit, label: "Claude agent", value: "validated plans" },
@@ -24,28 +25,38 @@ export function AuthPanel() {
           backgroundImage:
             "linear-gradient(var(--border-default) 1px, transparent 1px), linear-gradient(90deg, var(--border-default) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          maskImage: "linear-gradient(to bottom, black, transparent 85%)",
+          maskImage: "linear-gradient(to bottom, var(--text-primary), transparent 85%)",
         }}
       />
 
       <div className="relative z-10 flex min-h-full w-full flex-col justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border-default bg-accent-primary-dim">
-            <Ghost className="h-4 w-4 text-accent-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border-default bg-accent-primary-dim transition-all duration-200 hover:border-accent-primary hover:bg-accent-primary hover:bg-opacity-20">
+              <Ghost className="h-4 w-4 text-accent-primary" />
+            </div>
+            <span className="text-base font-bold text-text-primary">
+              Ghost<span className="text-accent-primary">AI</span>
+            </span>
           </div>
-          <span className="text-base font-bold tracking-tight text-text-primary">
-            Ghost<span className="text-accent-primary">AI</span>
-          </span>
+          <Link
+            href="/ui-showcase"
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-elevated px-2.5 py-1.5 text-xs font-medium text-text-secondary transition-all duration-150 hover:border-accent-primary hover:bg-accent-primary-dim hover:text-accent-primary"
+            title="View design system"
+          >
+            <Palette className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Design System</span>
+          </Link>
         </div>
 
         <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
           <div className="max-w-md space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border-default bg-elevated px-3 py-1 text-xs font-medium text-text-secondary">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border-default bg-elevated px-3 py-1 text-xs font-medium text-text-secondary animate-fade-in">
               <Sparkles className="h-3.5 w-3.5 text-accent-ai-text" />
               Applied AI system design studio
             </div>
             <div className="space-y-3">
-              <h1 className="text-[2.7rem] font-semibold leading-[1.05] tracking-tight text-text-primary">
+              <h1 className="text-[2.7rem] font-semibold leading-[1.05] text-text-primary">
                 Ship the architecture, not just the idea.
               </h1>
               <p className="max-w-sm text-[15px] leading-7 text-text-secondary">
@@ -54,7 +65,7 @@ export function AuthPanel() {
             </div>
           </div>
 
-          <div className="studio-panel-strong relative min-h-[360px] overflow-hidden rounded-3xl bg-surface p-4">
+          <div className="studio-panel-strong relative min-h-[360px] overflow-hidden rounded-3xl bg-surface p-4 animate-slide-in-right">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-ai-dim">
@@ -80,22 +91,22 @@ export function AuthPanel() {
                 className="absolute inset-0 opacity-35"
                 style={{
                   backgroundImage:
-                    "radial-gradient(circle, rgb(255 255 255 / 16%) 1px, transparent 1px)",
-                  backgroundSize: "18px 18px",
+                    "linear-gradient(to right, var(--canvas-grid-soft) 1px, transparent 1px), linear-gradient(to bottom, var(--canvas-grid-soft) 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
                 }}
               />
               <svg className="absolute inset-0 h-full w-full" aria-hidden>
                 <path
                   d="M74 62 C132 70 143 96 180 112"
                   fill="none"
-                  stroke="rgb(148 163 184 / 55%)"
+                  stroke="var(--canvas-edge-soft)"
                   strokeWidth="1.6"
                   className="ghost-flow-dashed"
                 />
                 <path
                   d="M206 112 C244 92 266 78 308 66"
                   fill="none"
-                  stroke="rgb(148 163 184 / 55%)"
+                  stroke="var(--canvas-edge-soft)"
                   strokeWidth="1.6"
                   className="ghost-flow-dashed"
                   style={{ animationDelay: "0.4s" }}
@@ -103,29 +114,35 @@ export function AuthPanel() {
                 <path
                   d="M180 130 C142 158 126 174 104 198"
                   fill="none"
-                  stroke="rgb(148 163 184 / 45%)"
+                  stroke="var(--canvas-edge-soft)"
                   strokeWidth="1.4"
                   className="ghost-flow-dashed"
-                  style={{ animationDelay: "0.2s" }}
+                  style={{ animationDelay: "0.2s", opacity: 0.82 }}
                 />
                 <path
                   d="M218 130 C255 160 273 176 292 196"
                   fill="none"
-                  stroke="rgb(148 163 184 / 45%)"
+                  stroke="var(--canvas-edge-soft)"
                   strokeWidth="1.4"
                   className="ghost-flow-dashed"
-                  style={{ animationDelay: "0.6s" }}
+                  style={{ animationDelay: "0.6s", opacity: 0.82 }}
                 />
               </svg>
               {previewNodes.map((node) => (
                 <div
                   key={node.label}
-                  className={`absolute rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm ${node.className}`}
+                  className={`absolute rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 ${node.className}`}
                 >
                   {node.label}
                 </div>
               ))}
-              <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-medium text-white shadow-lg backdrop-blur">
+              <div
+                className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium text-text-inverse shadow-[var(--shadow-canvas-panel)] backdrop-blur transition-all duration-200"
+                style={{
+                  background: "var(--canvas-glass-bg)",
+                  borderColor: "var(--canvas-glass-border)",
+                }}
+              >
                 <GitBranch className="h-3.5 w-3.5" />
                 Ghost applies graph updates
               </div>
@@ -133,7 +150,7 @@ export function AuthPanel() {
 
             <div className="mt-4 grid grid-cols-3 gap-2">
               {proofPoints.map(({ Icon, label, value }) => (
-                <div key={label} className="rounded-2xl border border-border-default bg-elevated px-3 py-2">
+                <div key={label} className="rounded-2xl border border-border-default bg-elevated px-3 py-2 transition-all duration-150 hover:border-accent-primary hover:bg-accent-primary-faint">
                   <Icon className="mb-2 h-4 w-4 text-accent-primary" />
                   <p className="text-[11px] font-semibold text-text-primary">{label}</p>
                   <p className="truncate text-[10px] text-text-muted">{value}</p>
@@ -144,7 +161,7 @@ export function AuthPanel() {
         </div>
 
         <p className="text-xs text-text-faint">
-          Portfolio-grade full-stack AI product.
+          Portfolio-grade full-stack AI product. <Link href="/ui-showcase" className="font-medium text-accent-primary hover:underline">View design tokens</Link>
         </p>
       </div>
     </div>

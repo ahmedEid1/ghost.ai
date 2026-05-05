@@ -210,7 +210,7 @@ export function RoomChatTab({ projectId }: RoomChatTabProps) {
                     <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-accent-ai-dim">
                       <Bot className="h-3 w-3 text-accent-ai-text" />
                     </div>
-                    <div className="group relative max-w-[85%] rounded-2xl rounded-tl-sm border border-border-default bg-surface px-3 py-2 text-xs leading-relaxed text-text-secondary shadow-sm">
+                    <div className="group relative max-w-[85%] rounded-2xl rounded-tl-sm border border-border-default bg-surface px-3 py-2 text-xs leading-relaxed text-text-secondary">
                       {msg.data.content}
                       <span className="pointer-events-none ml-2 select-none text-[9px] opacity-0 transition-opacity group-hover:opacity-60">
                         {timestamp}
@@ -234,7 +234,7 @@ export function RoomChatTab({ projectId }: RoomChatTabProps) {
                     className={`group relative max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                       isOwn
                         ? "rounded-tr-sm border border-accent-primary/20 bg-accent-primary-dim text-text-primary"
-                        : "rounded-tl-sm border border-border-default bg-surface text-text-secondary shadow-sm"
+                        : "rounded-tl-sm border border-border-default bg-surface text-text-secondary"
                     }`}
                   >
                     {msg.data.content}

@@ -41,6 +41,8 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
     openEditDialog,
     openDeleteDialog,
     closeDialog,
+    addProject,
+    syncProject,
     handleCreate,
     handleEdit,
     handleDelete,
@@ -66,6 +68,7 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
       if (!res.ok) throw new Error(data.error ?? "Failed to duplicate");
 
       const newProjectId: string = data.id;
+      addProject(data as Project);
 
       // Try to copy canvas from original project
       try {
@@ -98,11 +101,14 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
         openDeleteDialog,
         openShareDialog,
         duplicateProject,
+        syncProject,
       }}
     >
       <div className="h-screen w-screen overflow-hidden bg-base text-text-primary">
         <EditorNavbar
           isSidebarOpen={isSidebarOpen}
+          projectCount={projects.length}
+          onCreateProject={openCreateDialog}
           onSidebarToggle={() => setIsSidebarOpen((prev) => !prev)}
         />
         <ProjectSidebar
@@ -114,7 +120,7 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
           onDeleteProject={openDeleteDialog}
           onShareProject={openShareDialog}
         />
-        <main className="h-full pt-12">{children}</main>
+        <main className="h-full pt-14">{children}</main>
 
         <CreateProjectDialog
           open={activeDialog === "create"}

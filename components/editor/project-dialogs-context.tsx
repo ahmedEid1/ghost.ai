@@ -11,6 +11,7 @@ interface ProjectDialogsContextValue {
   openDeleteDialog: (project: Project) => void;
   openShareDialog: (project: Project) => void;
   duplicateProject: (project: Project) => Promise<void>;
+  syncProject: (project: Project) => void;
 }
 
 export const ProjectDialogsContext =

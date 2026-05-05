@@ -127,7 +127,7 @@ function ChatBubble({ message }: { message: Message }) {
         )}
       </div>
       <div
-        className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border-default bg-surface px-3 py-2 text-sm leading-relaxed text-text-secondary shadow-sm"
+        className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border-default bg-surface px-3 py-2 text-sm leading-relaxed text-text-secondary"
         style={message.phase === "error" ? { color: "var(--state-error)" } : undefined}
       >
         {message.content}
@@ -189,31 +189,33 @@ export function AiArchitectTab({ projectId, aiActivity }: AiArchitectTabProps) {
     const content =
       phase === "complete" || phase === "error" ? latestStatus.message : label;
 
-    setMessages((prev) => {
-      const lastIdx = prev.findLastIndex((m) => m.isStatus && m.role === "assistant");
+    queueMicrotask(() => {
+      setMessages((prev) => {
+        const lastIdx = prev.findLastIndex((m) => m.isStatus && m.role === "assistant");
 
-      if (lastIdx !== -1 && prev[lastIdx].runId === latestStatus.runId) {
-        const updated = [...prev];
-        updated[lastIdx] = { ...updated[lastIdx], content, phase };
-        return updated;
+        if (lastIdx !== -1 && prev[lastIdx].runId === latestStatus.runId) {
+          const updated = [...prev];
+          updated[lastIdx] = { ...updated[lastIdx], content, phase };
+          return updated;
+        }
+
+        return [
+          ...prev,
+          {
+            id: `status-${latestStatus.runId}-${phase}`,
+            role: "assistant",
+            content,
+            isStatus: true,
+            phase,
+            runId: latestStatus.runId,
+          },
+        ];
+      });
+
+      if (phase === "complete" || phase === "error") {
+        setLocalRunning(false);
       }
-
-      return [
-        ...prev,
-        {
-          id: `status-${latestStatus.runId}-${phase}`,
-          role: "assistant",
-          content,
-          isStatus: true,
-          phase,
-          runId: latestStatus.runId,
-        },
-      ];
     });
-
-    if (phase === "complete" || phase === "error") {
-      setLocalRunning(false);
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latestStatus]);
 

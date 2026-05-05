@@ -45,7 +45,7 @@ export function CanvasSaveStatus({
     <div
       className="canvas-panel absolute bottom-4 right-4 z-10 flex items-center gap-1.5 rounded-2xl px-2 py-1.5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200"
       style={{
-        borderColor: isError ? "var(--state-error)" : "rgb(216 225 236 / 88%)",
+        borderColor: isError ? "var(--state-error)" : "var(--border-default)",
         opacity: isPending && !isSaving ? 0.7 : 1,
         transition: "opacity 0.2s ease, border-color 0.2s ease",
       }}

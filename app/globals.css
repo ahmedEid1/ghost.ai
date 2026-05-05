@@ -14,24 +14,40 @@
   --color-border-default: var(--border-default);
   --color-border-subtle: var(--border-subtle);
   --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
 
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
   --color-text-faint: var(--text-faint);
   --color-text-inverse: var(--text-inverse);
+  --color-text-disabled: var(--text-disabled);
 
   --color-accent-primary: var(--accent-primary);
   --color-accent-primary-dim: var(--accent-primary-dim);
+  --color-accent-primary-faint: var(--accent-primary-faint);
   --color-accent-ai: var(--accent-ai);
   --color-accent-ai-text: var(--accent-ai-text);
   --color-accent-ai-dim: var(--accent-ai-dim);
+  --color-accent-ai-faint: var(--accent-ai-faint);
   --color-accent-collab: var(--accent-collab);
   --color-accent-collab-dim: var(--accent-collab-dim);
+  --color-accent-collab-faint: var(--accent-collab-faint);
 
   --color-state-error: var(--state-error);
+  --color-state-error-dim: var(--state-error-dim);
   --color-state-success: var(--state-success);
+  --color-state-success-dim: var(--state-success-dim);
   --color-state-warning: var(--state-warning);
+  --color-state-warning-dim: var(--state-warning-dim);
+  --color-state-info: var(--state-info);
+  --color-state-info-dim: var(--state-info-dim);
+
+  --color-overlay: var(--bg-overlay);
+  --color-canvas-edge: var(--canvas-edge-default);
+  --color-canvas-edge-soft: var(--canvas-edge-soft);
+  --color-canvas-grid: var(--canvas-grid-default);
+  --color-canvas-grid-soft: var(--canvas-grid-soft);
 
   --color-background: var(--bg-base);
   --color-foreground: var(--text-primary);
@@ -53,6 +69,16 @@
   --color-input: var(--border-subtle);
   --color-ring: var(--accent-primary);
 
+  /* Animation Library */
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-slide-in-top: slide-in-top 300ms ease-out;
+  --animate-slide-in-bottom: slide-in-bottom 300ms ease-out;
+  --animate-slide-in-left: slide-in-left 300ms ease-out;
+  --animate-slide-in-right: slide-in-right 300ms ease-out;
+  --animate-scale-in: scale-in 250ms ease-out;
+  --animate-pulse-ring: pulse-ring 2s ease-in-out infinite;
+  --animate-status-glow: status-glow 2s ease-in-out infinite;
+
   --radius-sm: 0.625rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
@@ -66,40 +92,73 @@
 }
 
 :root {
+  /* Surfaces & Backgrounds */
   --bg-base: #f6f8fb;
   --bg-canvas: #111827;
   --bg-canvas-soft: #172033;
-  --bg-surface: #ffffff;
+  --bg-surface: #fff;
   --bg-elevated: #f1f5f9;
   --bg-subtle: #e8eef6;
+  --bg-overlay: rgb(0 0 0 / 32%);
 
+  /* Borders & Dividers */
   --border-default: #d8e1ec;
   --border-subtle: #c6d2e2;
   --border-strong: #94a3b8;
+  --border-focus: #2563eb;
 
+  /* Text & Typography */
   --text-primary: #111827;
   --text-secondary: #344256;
   --text-muted: #64748b;
   --text-faint: #94a3b8;
-  --text-inverse: #ffffff;
+  --text-inverse: #fff;
+  --text-disabled: rgb(100 116 139 / 50%);
 
+  /* Primary Brand (Actions, Focus, Navigation) */
   --accent-primary: #2563eb;
   --accent-primary-hover: #1d4ed8;
+  --accent-primary-active: #1e40af;
   --accent-primary-dim: rgb(37 99 235 / 10%);
+  --accent-primary-faint: rgb(37 99 235 / 5%);
+
+  /* AI States (Ghost AI Actions, Progress, Generation) */
   --accent-ai: #7c3aed;
+  --accent-ai-hover: #6d28d9;
   --accent-ai-text: #6d28d9;
   --accent-ai-dim: rgb(124 58 237 / 11%);
+  --accent-ai-faint: rgb(124 58 237 / 5%);
+
+  /* Collaboration States (Presence, Chat, Shared Actions) */
   --accent-collab: #0f766e;
+  --accent-collab-hover: #0d5d59;
   --accent-collab-dim: rgb(15 118 110 / 10%);
+  --accent-collab-faint: rgb(15 118 110 / 5%);
 
+  /* Semantic Feedback States */
   --state-error: #dc2626;
+  --state-error-dim: rgb(220 38 38 / 10%);
   --state-success: #059669;
+  --state-success-dim: rgb(5 150 105 / 10%);
   --state-warning: #d97706;
+  --state-warning-dim: rgb(217 119 6 / 10%);
+  --state-info: #0284c7;
+  --state-info-dim: rgb(2 132 199 / 10%);
 
+  /* Shadows & Depth */
   --shadow-soft: 0 12px 36px rgb(15 23 42 / 8%);
   --shadow-panel: 0 18px 48px rgb(15 23 42 / 12%);
   --shadow-canvas-panel: 0 18px 44px rgb(0 0 0 / 28%);
+  --shadow-focus: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent-primary);
+
+  /* Canvas & Graph Specific */
   --canvas-edge-default: rgb(226 232 240 / 68%);
+  --canvas-edge-soft: rgb(148 163 184 / 55%);
+  --canvas-edge-hover: rgb(37 99 235 / 100%);
+  --canvas-grid-default: rgb(148 163 184 / 12%);
+  --canvas-grid-soft: rgb(255 255 255 / 16%);
+  --canvas-glass-bg: rgb(255 255 255 / 10%);
+  --canvas-glass-border: rgb(255 255 255 / 15%);
 
   --background: var(--bg-base);
   --foreground: var(--text-primary);
@@ -137,7 +196,7 @@
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    text-rendering: geometricPrecision;
+    text-rendering: geometricprecision;
 
     @apply bg-background text-foreground;
   }
@@ -192,14 +251,133 @@ button:not(:disabled),
   }
 }
 
+@keyframes cursor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ghost-ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes ghost-pulse-dot {
   0%, 100% {
     opacity: 0.55;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.18);
+  }
+}
+
+/* Control & Interaction Feedback */
+@keyframes shimmer-soft {
+  0%, 100% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* State Indication */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 currentcolor;
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes status-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 2px currentcolor;
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px currentcolor;
   }
 }
 
@@ -214,6 +392,24 @@ button:not(:disabled),
 
 .ghost-pulse-dot {
   animation: ghost-pulse-dot 1.6s ease-in-out infinite;
+}
+
+/* Smooth transitions across app */
+.transition-smooth {
+  @apply transition-all duration-150 ease-out;
+}
+
+.transition-smooth-lg {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Control state transitions */
+.control-interactive {
+  @apply transition-colors duration-120 ease-out;
+}
+
+.spatial-interactive {
+  @apply transition-all duration-300 ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

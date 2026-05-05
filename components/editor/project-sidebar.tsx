@@ -30,11 +30,11 @@ function ProjectItem({
   onShare: (project: Project) => void;
 }) {
   return (
-    <div className="group flex min-w-0 items-center gap-1 rounded-xl border border-transparent transition-colors hover:border-border-default hover:bg-elevated">
+    <div className="group flex min-w-0 items-center gap-1 rounded-lg border border-transparent transition-all duration-150 hover:border-border-default hover:bg-elevated">
       <Link
         href={`/editor/${project.id}`}
         onClick={onClose}
-        className="min-w-0 flex-1 truncate px-2 py-2 text-sm font-medium text-text-primary"
+        className="min-w-0 flex-1 truncate px-2.5 py-2 text-sm font-medium text-text-primary transition-colors duration-150"
       >
         {project.name}
       </Link>
@@ -47,7 +47,7 @@ function ProjectItem({
               e.stopPropagation();
               onShare(project);
             }}
-            className="h-7 w-7 text-text-muted opacity-0 transition-opacity hover:text-text-primary group-hover:opacity-100"
+            className="h-7 w-7 text-text-muted opacity-0 transition-all duration-150 hover:text-accent-collab group-hover:opacity-100"
             aria-label={`Share ${project.name}`}
           >
             <Share2 className="h-3.5 w-3.5" />
@@ -59,7 +59,7 @@ function ProjectItem({
               e.stopPropagation();
               onEdit(project);
             }}
-            className="h-7 w-7 text-text-muted opacity-0 transition-opacity hover:text-text-primary group-hover:opacity-100"
+            className="h-7 w-7 text-text-muted opacity-0 transition-all duration-150 hover:text-accent-primary group-hover:opacity-100"
             aria-label={`Edit ${project.name}`}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -71,7 +71,7 @@ function ProjectItem({
               e.stopPropagation();
               onDelete(project);
             }}
-            className="h-7 w-7 text-text-muted opacity-0 transition-opacity hover:text-state-error group-hover:opacity-100"
+            className="h-7 w-7 text-text-muted opacity-0 transition-all duration-150 hover:text-state-error group-hover:opacity-100"
             aria-label={`Delete ${project.name}`}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -98,22 +98,22 @@ export function ProjectSidebar({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-950/20 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-none"
+          className="fixed inset-0 z-30 bg-overlay backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-none"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <div
-        className={`fixed left-3 top-[3.75rem] z-40 flex h-[calc(100vh-4.5rem)] w-80 flex-col rounded-3xl border border-border-default bg-surface/95 shadow-[var(--shadow-panel)] backdrop-blur transition-transform duration-300 ease-out sm:left-3 ${
-          isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+        className={`fixed left-3 top-[4.25rem] z-40 flex h-[calc(100vh-5rem)] w-80 flex-col rounded-3xl border border-border-default bg-surface/95 shadow-[var(--shadow-panel)] backdrop-blur transition-all duration-300 ease-out sm:left-3 ${
+          isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
         }`}
         aria-hidden={!isOpen}
         inert={!isOpen || undefined}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-border-default px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border-default px-4 py-3 transition-colors duration-150">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-primary-dim">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary-dim transition-all duration-200">
               <FolderKanban className="h-4 w-4 text-accent-primary" />
             </div>
             <div>
@@ -127,7 +127,7 @@ export function ProjectSidebar({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-7 w-7 text-text-muted hover:text-text-primary"
+            className="h-7 w-7 text-text-muted transition-all duration-150 hover:bg-elevated hover:text-text-primary"
             aria-label="Close sidebar"
           >
             <X className="h-4 w-4" />
@@ -138,11 +138,11 @@ export function ProjectSidebar({
           defaultValue="my-projects"
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <TabsList className="mx-4 mt-3 shrink-0 bg-elevated">
-            <TabsTrigger value="my-projects" className="flex-1 text-xs">
+          <TabsList className="mx-4 mt-3 shrink-0 bg-elevated transition-colors duration-150">
+            <TabsTrigger value="my-projects" className="flex-1 text-xs transition-all duration-150">
               My Projects
             </TabsTrigger>
-            <TabsTrigger value="shared" className="flex-1 text-xs">
+            <TabsTrigger value="shared" className="flex-1 text-xs transition-all duration-150">
               Shared with Me
             </TabsTrigger>
           </TabsList>
@@ -157,7 +157,7 @@ export function ProjectSidebar({
                   No projects yet.
                 </p>
               ) : (
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 animate-fade-in">
                   {myProjects.map((project) => (
                     <ProjectItem
                       key={project.id}
@@ -183,7 +183,7 @@ export function ProjectSidebar({
                   Nothing shared with you yet.
                 </p>
               ) : (
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 animate-fade-in">
                   {sharedProjects.map((project) => (
                     <ProjectItem
                       key={project.id}
@@ -201,7 +201,7 @@ export function ProjectSidebar({
         </Tabs>
 
         <div className="shrink-0 border-t border-border-default p-4">
-          <Button className="w-full gap-2" onClick={onOpenCreateDialog}>
+          <Button className="w-full gap-2 transition-all duration-150" onClick={onOpenCreateDialog}>
             <Plus className="h-4 w-4" />
             Create New Project
           </Button>

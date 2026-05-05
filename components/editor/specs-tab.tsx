@@ -106,25 +106,25 @@ function RunTracker({
 }
 
 export function SpecsTab({ projectId, getCanvasSnapshot }: SpecsTabProps) {
-  // ── Spec list state ──────────────────────────────────────────────────────────
+  // Spec list state
   const [specs, setSpecs] = useState<SpecMeta[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
-  // ── Generate state ───────────────────────────────────────────────────────────
+  // Generate state
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [publicToken, setPublicToken] = useState<string | null>(null);
   const [currentPhase, setCurrentPhase] = useState<string | null>(null);
 
-  // ── Preview modal state ──────────────────────────────────────────────────────
+  // Preview modal state
   const [selectedSpec, setSelectedSpec] = useState<SpecMeta | null>(null);
   const [specContent, setSpecContent] = useState<string | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
 
-  // ── Liveblocks feed for chat history context ─────────────────────────────────
+  // Liveblocks feed for chat history context
   const createFeed = useCreateFeed();
   const { messages: feedMessages } = useFeedMessages(FEED_ID);
   const feedAttemptedRef = useRef(false);
@@ -138,7 +138,7 @@ export function SpecsTab({ projectId, getCanvasSnapshot }: SpecsTabProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Spec list fetcher ────────────────────────────────────────────────────────
+  // Spec list fetcher
   const fetchSpecs = useCallback(async () => {
     setListLoading(true);
     try {
@@ -164,10 +164,17 @@ export function SpecsTab({ projectId, getCanvasSnapshot }: SpecsTabProps) {
   }, [projectId]);
 
   useEffect(() => {
-    void fetchSpecs();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchSpecs();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchSpecs]);
 
-  // ── Generate handler ─────────────────────────────────────────────────────────
+  // Generate handler
   const handleGenerate = useCallback(async () => {
     if (isGenerating) return;
 
@@ -245,7 +252,7 @@ export function SpecsTab({ projectId, getCanvasSnapshot }: SpecsTabProps) {
           }
         }
       } catch {
-        // Non-fatal — continue without realtime updates
+        // Non-fatal: continue without realtime updates
       }
 
       // Token unavailable: still track the run ID for display purposes
@@ -275,7 +282,7 @@ export function SpecsTab({ projectId, getCanvasSnapshot }: SpecsTabProps) {
     [fetchSpecs],
   );
 
-  // ── Preview modal handlers ───────────────────────────────────────────────────
+  // Preview modal handlers
   const handleSpecClick = useCallback(
     (spec: SpecMeta) => {
       setSelectedSpec(spec);

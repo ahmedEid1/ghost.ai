@@ -145,7 +145,7 @@ export function CreateProjectDialog({
             ) : (
               <p className="px-0.5 text-xs text-text-muted">
                 Room slug:{" "}
-                <span className="font-mono text-text-secondary">{slug || "—"}</span>
+                <span className="font-mono text-text-secondary">{slug || "-"}</span>
               </p>
             )}
           </div>
@@ -280,7 +280,7 @@ export function EditProjectDialog({
             ) : (
               <p className="px-0.5 text-xs text-text-muted">
                 Room slug:{" "}
-                <span className="font-mono text-text-secondary">{slug || "—"}</span>
+                <span className="font-mono text-text-secondary">{slug || "-"}</span>
               </p>
             )}
           </div>

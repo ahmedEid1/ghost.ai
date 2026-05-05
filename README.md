@@ -1,10 +1,12 @@
-# Ghost AI — AI System Design Studio
+# Ghost AI — Real-time, AI-native System Design Studio
 
-**An applied AI engineering portfolio project** — built spec-first with Claude Code, demonstrating full-stack architecture, real-time collaboration, and production-grade AI agent workflows.
+**A portfolio piece for full-stack + applied AI engineering** — built spec-first with Claude Code. Every feature is a deliberate signal: durable AI workflows, schema-validated model output, real-time CRDT collaboration, role-based access, production storage, and a token-driven design system.
 
-## What Is This?
+## What it does
 
-Ghost AI is a collaborative system architecture studio. Describe a software system in plain English, and Ghost AI generates a live, editable architecture diagram on a shared canvas. Collaborators refine the design in real time and export a Markdown technical spec.
+Describe a system in plain language. Claude generates a validated architecture and streams it onto a live canvas where the team edits in real time. One click turns the diagram into a structured Markdown technical spec stored in object storage. The full loop — describe, diagram, collaborate, spec — runs in under 60 seconds.
+
+A public design-system route at [`/ui-showcase`](app/ui-showcase) presents the visual contract behind the product: live AI/presence/workflow vignettes, the color and motion vocabulary, and the engineering signals each piece of the stack demonstrates. No auth required.
 
 ## Quick Start
 
@@ -52,19 +54,29 @@ The result: a codebase that another engineer can understand and extend quickly.
 
 ## Core Features
 
-✨ **Real-time collaborative canvas** — React Flow synced through Liveblocks; shape, color, label, edge routing, autosave, and restore  
-🤖 **AI architecture generation** — Describe your system in natural language; Claude generates validated canvas mutations  
-📋 **Spec generation** — Turn your diagram into Markdown technical documentation saved to Vercel Blob  
-👥 **Presence and chat** — Cursors, avatars, Ghost AI activity state, and persistent room chat  
-🎨 **Starter templates** — Pre-built system architectures for common patterns  
+- **Real-time collaborative canvas** — React Flow synced through Liveblocks; shape, color, label, edge routing, autosave, and restore.
+- **AI architecture generation** — natural-language prompt → Claude → schema-validated canvas mutations streamed live.
+- **Spec generation** — one-click Markdown technical spec, persisted to Vercel Blob with secure download.
+- **Presence and chat** — cursors, avatars, Ghost AI activity state, persistent room chat.
+- **Starter templates** — pre-built canvases for common system patterns.
+- **Public design-system route** — `/ui-showcase` documents the studio palette, motion library, and component patterns with live, animated vignettes of the AI, presence, and workflow surfaces.
 
-## Context Files
+## Design system
 
-For development context, read these in order:
+The visual direction is a **studio palette** — light app shell with a deep, focused canvas surface, the same approach Figma, Linear, and Vercel use for editor experiences. It is not "dark mode"; it is a working environment.
 
-1. **`context/project-and-ui.md`** — Product definition, design tokens, and layout principles
-2. **`context/architecture-and-standards.md`** — System boundaries, invariants, and coding rules
-3. **`context/workflow-and-tracker.md`** — Development workflow, current phase, and progress
+- All color, motion, and shape are CSS custom properties in [`app/globals.css`](app/globals.css), surfaced through Tailwind v4 with `@theme inline`.
+- No hex literals in components. No raw Tailwind color families (`zinc-*`, `gray-*`) in product code.
+- Motion library covers fade-in, slide variants, scale-in, pulse-ring, and Ghost-flow animations — all honoring `prefers-reduced-motion`.
+- Browse it live at [`/ui-showcase`](app/ui-showcase).
+
+## Context files
+
+For development context, read in order:
+
+1. **[`context/ghost-ai.md`](context/ghost-ai.md)** — single source of truth: product, architecture, invariants, coding standards, design system.
+2. **[`context/tracker.md`](context/tracker.md)** — workflow, current phase, completed work, next steps.
+3. **[`context/features/`](context/features)** — per-feature briefs (F1–F9). Reference when touching a known feature.
 
 Update context files when scope or architecture changes — **before implementing**.
 
@@ -360,10 +372,11 @@ gohst.ai/
 ├── prisma/
 │   └── schema.prisma     # Database schema
 ├── types/                # Shared TypeScript types (canvas, Liveblocks)
+├── app/ui-showcase/      # Public design-system surface (no auth)
 └── context/              # Spec-first development context (living docs)
-    ├── project-and-ui.md
-    ├── architecture-and-standards.md
-    └── workflow-and-tracker.md
+    ├── ghost-ai.md       # Product, architecture, invariants, design system
+    ├── tracker.md        # Workflow + current progress
+    └── features/         # Per-feature briefs (F1–F9)
 ```
 
 ---
@@ -465,30 +478,20 @@ npm run dev:trigger
 
 ---
 
-## What This Project Demonstrates
+## Engineering signals
 
-### For AI Engineering Roles
+A short read of what to look for, and where it lives in the code.
 
-- Structured model output with Zod validation — preventing hallucinated JSON from corrupting shared state
-- Durable AI background tasks with automatic retry and exponential backoff (Trigger.dev)
-- Agent phase tracking with real-time status propagation to all connected clients
-- Explicit validation layer between AI planning and AI execution
-- Spec-first context management enabling consistent, high-quality multi-session AI development
-
-### For Full-Stack Roles
-
-- Auth and per-resource access control (Clerk + Prisma)
-- Real-time multi-user state sync without manual conflict resolution (Liveblocks CRDT)
-- React Server Components-first architecture; `"use client"` only where browser APIs or hooks are needed
-- Typed API boundaries with Zod validation at every external boundary (user input, AI output, storage reads)
-- Large artifact storage decoupled from the relational database (Vercel Blob + Postgres reference)
-
-### For Engineering Process
-
-- Spec-first development with living context documents read by both human and AI at session start
-- Architecture invariants documented and enforced as explicit constraints
-- Progress tracking that reflects actual state (not aspirational state)
-- Codebase understandable to a new engineer in under 30 minutes
+| Signal | Where it shows up |
+|---|---|
+| **Durable AI workflows** | Claude runs inside Trigger.dev tasks ([`trigger/design-agent.ts`](trigger/design-agent.ts), [`trigger/generate-spec.ts`](trigger/generate-spec.ts)) — never inside request handlers — with retries, checkpoints, and progress streaming. |
+| **Schema-validated model output** | Every Claude response is parsed against a Zod schema before it touches Liveblocks or the database. |
+| **Real-time CRDT collaboration** | Liveblocks room with typed presence, undo/redo, conflict-free node and edge sync via React Flow. |
+| **Role-based access control** | Clerk auth, owner/collaborator model, server-side access checks on every mutation, three-layer workspace guard. |
+| **Production storage model** | Prisma + PostgreSQL for relational state, Vercel Blob for canvas snapshots and generated specs, autosave with optimistic UI. |
+| **Token-driven design system** | All color, motion, and shape come from CSS custom properties surfaced through Tailwind — no hardcoded values in components. Live at [`/ui-showcase`](app/ui-showcase). |
+| **Modern Next.js boundary discipline** | Server Components by default, `"use client"` only for browser interactivity, route protection in `proxy.ts` (not `middleware.ts`). |
+| **Spec-first development** | Living context docs in [`context/`](context) read by both human and AI at session start; architecture invariants enforced as explicit constraints. |
 
 ---
 

@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import StatBadge from "@/components/ui/stat-badge";
 import { useProjectDialogsContext } from "@/components/editor/project-dialogs-context";
 import { type Project, type ProjectStatus } from "@/lib/types";
 
@@ -77,7 +78,7 @@ function ProjectCard({
 
       <Link
         href={`/editor/${project.id}`}
-        className="mb-1 block truncate text-base font-semibold tracking-tight text-text-primary transition-colors hover:text-accent-primary"
+        className="mb-1 block truncate text-base font-semibold text-text-primary transition-colors hover:text-accent-primary"
       >
         {project.name}
       </Link>
@@ -149,7 +150,7 @@ function ProjectCard({
 }
 
 function StatCard({
-  icon: Icon,
+  icon,
   label,
   value,
   tone,
@@ -159,25 +160,15 @@ function StatCard({
   value: string;
   tone: "primary" | "ai" | "collab";
 }) {
-  const toneClass =
-    tone === "ai"
-      ? "bg-accent-ai-dim text-accent-ai-text"
-      : tone === "collab"
-        ? "bg-accent-collab-dim text-accent-collab"
-        : "bg-accent-primary-dim text-accent-primary";
-
   return (
-    <div className="rounded-2xl border border-border-default bg-surface px-4 py-3 shadow-[var(--shadow-soft)]">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${toneClass}`}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-lg font-semibold leading-none text-text-primary">{value}</p>
-          <p className="mt-1 text-xs text-text-muted">{label}</p>
-        </div>
-      </div>
-    </div>
+    <StatBadge
+      icon={icon}
+      label={label}
+      value={Number(value)}
+      tone={tone}
+      animateCount
+      pulseOnUpdate
+    />
   );
 }
 
@@ -214,10 +205,6 @@ export default function EditorPage() {
     return (
       <div className="flex h-full w-full items-center justify-center p-6">
         <div className="studio-panel-strong relative flex w-full max-w-2xl flex-col items-center gap-7 overflow-hidden rounded-3xl px-8 py-10 text-center">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-primary/40 to-transparent"
-          />
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-primary-dim">
             <span
               aria-hidden
@@ -229,7 +216,7 @@ export default function EditorPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-primary">
               Architecture studio
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+            <h1 className="text-2xl font-semibold text-text-primary">
               Start an architecture workspace
             </h1>
             <p className="mx-auto max-w-md text-sm leading-6 text-text-muted">
@@ -255,7 +242,7 @@ export default function EditorPage() {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent-primary">
                   Architecture studio
                 </p>
-                <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+                <h1 className="text-2xl font-semibold text-text-primary">
                   Projects
                 </h1>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-text-muted">

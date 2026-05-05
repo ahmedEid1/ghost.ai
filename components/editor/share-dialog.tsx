@@ -83,13 +83,21 @@ export function ShareDialog({
   }, [projectId]);
 
   useEffect(() => {
-    if (open) {
-      fetchCollaborators();
+    if (!open) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      void fetchCollaborators();
       setInviteEmail("");
       setInviteError(null);
       setInviteSuccess(false);
       setCopied(false);
-    }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [open, fetchCollaborators]);
 
   async function handleInvite(e: React.FormEvent) {
@@ -183,9 +191,7 @@ export function ShareDialog({
         {/* Copy link */}
         <div className="flex items-center gap-2 rounded-xl border border-border-default bg-surface px-3 py-2">
           <span className="flex-1 truncate font-mono text-xs text-text-muted">
-            {typeof window !== "undefined"
-              ? `${window.location.origin}/editor/${projectId}`
-              : `/editor/${projectId}`}
+            /editor/{projectId}
           </span>
           <Button
             variant="ghost"

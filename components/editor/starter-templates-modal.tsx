@@ -15,7 +15,7 @@ import {
   type CanvasTemplateNode,
 } from "@/components/editor/starter-templates";
 
-// ─── Preview geometry helpers ─────────────────────────────────────────────────
+// Preview geometry helpers
 
 interface Bounds {
   minX: number; minY: number; maxX: number; maxY: number;
@@ -35,7 +35,7 @@ function getTemplateBounds(nodes: CanvasTemplateNode[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-// ─── Canvas-style SVG diagram preview ────────────────────────────────────────
+// Canvas-style SVG diagram preview
 
 const PW = 340;  // preview width
 const PH = 192;  // preview height
@@ -89,7 +89,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
       <defs>
         {/* Canvas-style dot grid */}
         <pattern id={`dots-${tid}`} width="14" height="14" patternUnits="userSpaceOnUse">
-          <circle cx="7" cy="7" r="0.85" fill="rgba(240,240,244,0.09)" />
+          <circle cx="7" cy="7" r="0.85" fill="var(--canvas-grid-soft)" />
         </pattern>
 
         {/* Arrowhead marker */}
@@ -102,7 +102,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
           orient="auto"
           markerUnits="strokeWidth"
         >
-          <path d="M0,0.5 L0,5.5 L5.5,3 Z" fill="rgba(255,255,255,0.38)" />
+          <path d="M0,0.5 L0,5.5 L5.5,3 Z" fill="var(--canvas-edge-soft)" />
         </marker>
 
         {/* Per-node clip paths */}
@@ -120,7 +120,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
       <rect width={PW} height={PH} style={{ fill: "var(--bg-canvas)" }} />
       <rect width={PW} height={PH} fill={`url(#dots-${tid})`} />
 
-      {/* Edges — drawn below nodes */}
+      {/* Edges drawn below nodes */}
       {template.edges.map((edg, idx) => {
         const src = geomMap[edg.source];
         const tgt = geomMap[edg.target];
@@ -135,7 +135,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
             y1={src.cy}
             x2={tgt.cx}
             y2={tgt.cy}
-            stroke="rgba(255,255,255,0.28)"
+            stroke="var(--canvas-edge-soft)"
             strokeWidth={1}
             strokeDasharray={isDashed ? "3 2.5" : "5 4"}
             markerEnd={`url(#arrow-${tid})`}
@@ -238,7 +238,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
   );
 }
 
-// ─── Template card ────────────────────────────────────────────────────────────
+// Template card
 
 interface TemplateCardProps {
   template: CanvasTemplate;
@@ -298,7 +298,7 @@ function TemplateCard({ template, onImport }: TemplateCardProps) {
   );
 }
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// Modal
 
 interface StarterTemplatesModalProps {
   open: boolean;

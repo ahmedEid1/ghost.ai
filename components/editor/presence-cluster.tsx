@@ -155,16 +155,8 @@ export function PresenceCluster({ collaborators }: PresenceClusterProps) {
   const visible = collaborators.slice(0, MAX_VISIBLE);
   const overflow = collaborators.length - MAX_VISIBLE;
 
-  const hasGhostAiThinking = collaborators.some(
-    (c) => c.isGhostAi && c.thinking,
-  );
-
   return (
     <>
-      {/* Keyframe for Ghost AI thinking ring */}
-      {hasGhostAiThinking && (
-        <style>{`@keyframes ghost-ai-spin { to { transform: rotate(360deg); } }`}</style>
-      )}
       <div
         role="group"
         aria-label="Room participants"

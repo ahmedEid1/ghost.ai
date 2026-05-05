@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { type Project, type ProjectStatus } from "@/lib/types";
 import { toSlug } from "@/lib/utils";
 import { useProjectActions } from "@/hooks/use-project-actions";
@@ -8,6 +9,7 @@ import { useProjectActions } from "@/hooks/use-project-actions";
 export type DialogType = "create" | "edit" | "delete" | null;
 
 export function useProjectDialogs(initialProjects: Project[]) {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [targetProject, setTargetProject] = useState<Project | null>(null);
@@ -18,6 +20,27 @@ export function useProjectDialogs(initialProjects: Project[]) {
 
   const { createProject, updateProject, deleteProject, isCreating, isUpdating, isDeleting } =
     useProjectActions();
+
+  function addProject(project: Project) {
+    setProjects((prev) => [
+      project,
+      ...prev.filter((p) => p.id !== project.id),
+    ]);
+  }
+
+  function syncProject(project: Project) {
+    setProjects((prev) => {
+      if (!prev.some((p) => p.id === project.id)) {
+        return [project, ...prev];
+      }
+
+      return prev.map((p) => (p.id === project.id ? project : p));
+    });
+  }
+
+  function removeProject(projectId: string) {
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+  }
 
   function resetFormState() {
     setProjectName("");
@@ -66,8 +89,9 @@ export function useProjectDialogs(initialProjects: Project[]) {
         ...(trimmedDescription ? { description: trimmedDescription } : {}),
         ...(projectStatus !== "DRAFT" ? { status: projectStatus } : {}),
       });
-      setProjects((prev) => [created, ...prev]);
+      addProject(created);
       closeDialog();
+      router.push(`/editor/${created.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create project");
     }
@@ -91,10 +115,9 @@ export function useProjectDialogs(initialProjects: Project[]) {
     setError(null);
     try {
       const updated = await updateProject(targetProject.id, patch);
-      setProjects((prev) =>
-        prev.map((p) => (p.id === targetProject.id ? updated : p))
-      );
+      syncProject(updated);
       closeDialog();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update project");
     }
@@ -104,9 +127,11 @@ export function useProjectDialogs(initialProjects: Project[]) {
     if (!targetProject) return;
     setError(null);
     try {
-      await deleteProject(targetProject.id);
-      setProjects((prev) => prev.filter((p) => p.id !== targetProject.id));
+      const deletedProjectId = targetProject.id;
+      await deleteProject(deletedProjectId);
+      removeProject(deletedProjectId);
       closeDialog();
+      router.push("/editor");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete project");
     }
@@ -129,6 +154,9 @@ export function useProjectDialogs(initialProjects: Project[]) {
     openEditDialog,
     openDeleteDialog,
     closeDialog,
+    addProject,
+    syncProject,
+    removeProject,
     handleCreate,
     handleEdit,
     handleDelete,

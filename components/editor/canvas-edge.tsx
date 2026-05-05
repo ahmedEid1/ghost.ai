@@ -372,8 +372,8 @@ function MidpointHandle({ x, y, hasCustomCenter, screenToFlowPosition, onDrag, o
         background: hasCustomCenter ? "var(--accent-primary)" : "var(--bg-surface)",
         border: "2px solid var(--accent-primary)",
         boxShadow: dragging
-          ? "0 0 0 5px rgba(0,200,212,0.25)"
-          : "0 0 0 2px rgba(0,200,212,0.15)",
+          ? "0 0 0 5px var(--accent-primary-dim)"
+          : "0 0 0 2px var(--accent-primary-faint)",
         transition: "box-shadow 120ms, background 120ms",
         zIndex: 5,
       }}

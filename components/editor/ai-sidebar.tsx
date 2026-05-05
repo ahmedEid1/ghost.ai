@@ -20,7 +20,7 @@ export function AiSidebar({ isOpen, onClose, projectId, aiActivity, getCanvasSna
   if (!isOpen) return null;
 
   return (
-    <aside className="ml-2 flex w-[21rem] shrink-0 flex-col overflow-hidden rounded-3xl border border-border-default bg-surface shadow-[var(--shadow-panel)]">
+    <aside className="ml-2 flex w-[21rem] shrink-0 flex-col overflow-hidden rounded-3xl border border-border-default bg-surface shadow-[var(--shadow-panel)] animate-slide-in-right transition-all duration-300">
       <AiSidebarHeader onClose={onClose} />
 
       <Tabs

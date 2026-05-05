@@ -19,10 +19,6 @@ export function NoAccess({ projectId }: NoAccessProps) {
       data-project-id={projectId}
     >
       <div className="studio-panel-strong relative flex max-w-md flex-col items-center gap-6 overflow-hidden rounded-3xl px-8 py-9 text-center">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-state-error/40 to-transparent"
-        />
         <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-state-error/10">
           <span
             aria-hidden
@@ -38,7 +34,7 @@ export function NoAccess({ projectId }: NoAccessProps) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-state-error">
             403 Forbidden
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          <h1 className="text-2xl font-semibold text-text-primary">
             Access restricted
           </h1>
           <p className="text-sm leading-relaxed text-text-muted">

@@ -73,7 +73,7 @@ function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
         <path
           d="M0 0L0 14L4 10.5L6.5 16L8.5 15L6 9.5H11L0 0Z"
           fill={cursorColor}
-          stroke="rgba(0,0,0,0.4)"
+          stroke="var(--bg-overlay)"
           strokeWidth="0.75"
         />
       </svg>
@@ -90,15 +90,15 @@ function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
           padding: "2px 8px",
           borderRadius: 6,
           background: cursorColor,
-          color: "#fff",
+          color: "var(--text-inverse)",
           fontSize: 11,
           fontWeight: 600,
           lineHeight: "20px",
           whiteSpace: "nowrap",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+          boxShadow: "0 1px 3px var(--bg-overlay)",
         }}
       >
-        {thinking && <ThinkingSpinner color="rgba(255,255,255,0.85)" />}
+        {thinking && <ThinkingSpinner color="rgb(255 255 255 / 85%)" />}
         {displayName}
       </div>
     </div>
@@ -118,7 +118,6 @@ export function LiveCursorLayer({ participants }: LiveCursorLayerProps) {
 
   return (
     <>
-      <style>{`@keyframes cursor-spin { to { transform: rotate(360deg); } }`}</style>
       {withCursor.map((p) => (
         <SingleCursor
           key={p.id}

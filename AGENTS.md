@@ -1,15 +1,15 @@
 # Ghost AI — Agent Context
 
-## Before You Start
+## Before you start
 
-**Next.js 16 note:** This project uses Next.js 16 with breaking changes from your training data. Read `node_modules/next/dist/docs/` before modifying Next.js-specific APIs.
+**Next.js 16 note:** This project uses Next.js 16 with breaking changes from your training data. Read `node_modules/next/dist/docs/` before modifying Next-specific APIs.
 
-## Context Files
+## Context files
 
-Read these in order before implementing any change:
+Read in order:
 
-1. **`context/project-and-ui.md`** — Product definition, user flows, design tokens, theme, and layout
-2. **`context/architecture-and-standards.md`** — System boundaries, storage model, invariants, and coding rules
-3. **`context/workflow-and-tracker.md`** — Development workflow, current phase, completed work, and next steps
+1. **`context/ghost-ai.md`** — Product, architecture, invariants, coding standards, design system. The single source of truth.
+2. **`context/tracker.md`** — Workflow, current phase, completed work, next steps.
+3. **`context/features/`** — Per-feature briefs (F1–F9). Reference when touching a known feature.
 
-**Update context files when architecture, scope, or standards change — before implementation.**
+**Update the context file when product scope, architecture, or standards change — before implementation.**

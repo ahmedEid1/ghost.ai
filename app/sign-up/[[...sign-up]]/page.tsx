@@ -12,7 +12,7 @@ export default function SignUpPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-primary-dim border border-border-subtle">
             <Ghost className="h-4 w-4 text-accent-primary" />
           </div>
-          <span className="text-base font-bold text-text-primary tracking-tight">
+          <span className="text-base font-bold text-text-primary">
             Ghost<span className="text-accent-primary">AI</span>
           </span>
         </div>
