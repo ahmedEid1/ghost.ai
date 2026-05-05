@@ -18,8 +18,6 @@ import {
   useReactFlow,
   type Node,
   type Connection,
-  type EdgeChange,
-  type NodeChange,
   type EdgeTypes,
   type NodeTypes,
   type ReactFlowInstance,
@@ -314,23 +312,26 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
   // Context menu state
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
-  // Cascading deletion: remove specified nodes + all their connected edges + specified edges
+  // Cascading deletion: remove specified nodes + all their connected edges + specified edges.
+  // Uses onDelete from useLiveblocksFlow (the same path React Flow uses internally for
+  // keyboard deletion) instead of separate onNodesChange/onEdgesChange calls so that both
+  // the local state and Liveblocks storage are updated atomically in one operation.
   const handleDeleteItems = useCallback(
     (nodeIds: string[], edgeIds: string[]) => {
-      const edgeIdsToRemove = new Set(edgeIds);
-      for (const nid of nodeIds) {
+      if (nodeIds.length === 0 && edgeIds.length === 0) return;
+      const nodesToDelete = nodes.filter((n) => nodeIds.includes(n.id));
+      const connectedEdgeIds = new Set(edgeIds);
+      for (const node of nodesToDelete) {
         for (const edge of edges) {
-          if (edge.source === nid || edge.target === nid) {
-            edgeIdsToRemove.add(edge.id);
+          if (edge.source === node.id || edge.target === node.id) {
+            connectedEdgeIds.add(edge.id);
           }
         }
       }
-      const nodeChanges: NodeChange<CanvasFlowNode>[] = nodeIds.map((id) => ({ type: "remove", id }));
-      const edgeChanges: EdgeChange<CanvasEdgeFlowType>[] = [...edgeIdsToRemove].map((id) => ({ type: "remove", id }));
-      if (nodeChanges.length > 0) onNodesChange(nodeChanges);
-      if (edgeChanges.length > 0) onEdgesChange(edgeChanges);
+      const edgesToDelete = edges.filter((e) => connectedEdgeIds.has(e.id));
+      onDelete({ nodes: nodesToDelete, edges: edgesToDelete });
     },
-    [edges, onNodesChange, onEdgesChange],
+    [nodes, edges, onDelete],
   );
 
   // Delete currently selected nodes and edges
