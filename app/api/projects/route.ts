@@ -37,7 +37,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, description } = body as Record<string, unknown>;
+  const { name, description, status } = body as Record<string, unknown>;
+
+  const VALID_STATUSES = ["DRAFT", "ACTIVE", "ARCHIVED"] as const;
 
   if (name !== undefined && typeof name !== "string") {
     return Response.json({ error: "name must be a string" }, { status: 400 });
@@ -45,6 +47,16 @@ export async function POST(request: Request) {
   if (description !== undefined && typeof description !== "string") {
     return Response.json(
       { error: "description must be a string" },
+      { status: 400 }
+    );
+  }
+  if (
+    status !== undefined &&
+    (typeof status !== "string" ||
+      !(VALID_STATUSES as readonly string[]).includes(status))
+  ) {
+    return Response.json(
+      { error: "status must be one of DRAFT, ACTIVE, ARCHIVED" },
       { status: 400 }
     );
   }
@@ -56,6 +68,9 @@ export async function POST(request: Request) {
         name:
           typeof name === "string" && name.trim() ? name.trim() : "Untitled Project",
         description: typeof description === "string" ? description : undefined,
+        ...(typeof status === "string"
+          ? { status: status as "DRAFT" | "ACTIVE" | "ARCHIVED" }
+          : {}),
       },
       select: { id: true, name: true, description: true, status: true },
     });

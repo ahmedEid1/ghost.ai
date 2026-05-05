@@ -1,13 +1,8 @@
 "use client";
 
 import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { useUser } from "@clerk/nextjs";
-import {
-  LiveblocksProvider,
-  RoomProvider,
-  ClientSideSuspense,
-} from "@liveblocks/react/suspense";
-import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence } from "@liveblocks/react";
+import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence, useEventListener } from "@liveblocks/react";
+import type { AiStatusEvent } from "@/liveblocks.config";
 import { useLiveblocksFlow } from "@liveblocks/react-flow";
 import {
   ReactFlow,
@@ -38,6 +33,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useCanvasAutosave } from "@/hooks/use-canvas-autosave";
 import { NODE_COLORS, type CanvasNodeData } from "@/types/canvas";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
+import { computeOrganizedLayout, type LayoutDirection } from "@/lib/canvas-layout";
 
 // --- Canvas-specific node and edge types ---
 
@@ -58,7 +54,7 @@ const defaultEdgeOptions = {
   reconnectable: true,
   data: {
     routing:     "smoothstep",
-    color:       "rgba(255,255,255,0.55)",
+    color:       "var(--canvas-edge-default)",
     strokeWidth: 1.5,
     strokeDash:  "solid",
     arrowStart:  false,
@@ -104,9 +100,9 @@ class CanvasErrorBoundary extends Component<
 
 // --- Loading state ---
 
-function CanvasLoading() {
+export function CanvasLoading() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-base">
+    <div className="flex h-full w-full items-center justify-center bg-canvas">
       <div className="flex flex-col items-center gap-3">
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-transparent"
@@ -116,7 +112,7 @@ function CanvasLoading() {
           }}
         />
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          Connecting to canvas…
+          Connecting to canvas...
         </p>
       </div>
     </div>
@@ -125,13 +121,13 @@ function CanvasLoading() {
 
 // --- Error state ---
 
-function CanvasError() {
+export function CanvasError() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-base">
+    <div className="flex h-full w-full items-center justify-center bg-canvas">
       <div className="flex flex-col items-center gap-2 text-center">
         <p
           className="text-sm font-medium"
-          style={{ color: "var(--text-primary)" }}
+          style={{ color: "var(--text-inverse)" }}
         >
           Unable to connect to canvas
         </p>
@@ -161,10 +157,14 @@ function CoordinateBridge({ screenToFlowRef }: CoordinateBridgeProps) {
 
 // --- React Flow canvas wired to Liveblocks ---
 
+export type CanvasSnapshot = { nodes: unknown[]; edges: unknown[] };
+
 interface CanvasFlowProps {
   projectId: string;
   currentUserId: string;
   onImportReady?: (fn: (template: CanvasTemplate) => void) => void;
+  onAiStatusEvent?: (event: AiStatusEvent) => void;
+  onCanvasReady?: (getSnapshot: () => CanvasSnapshot) => void;
 }
 
 interface ContextMenuState {
@@ -174,7 +174,7 @@ interface ContextMenuState {
   edgeIds: string[];
 }
 
-function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps) {
+function CanvasFlow({ projectId, currentUserId, onImportReady, onAiStatusEvent, onCanvasReady }: CanvasFlowProps) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
     useLiveblocksFlow<CanvasFlowNode, CanvasEdgeFlowType>({
       suspense: true,
@@ -193,7 +193,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
 
   // Restore-on-empty: hydrate room from saved blob only when room is blank.
   // A ref prevents re-running after the first attempt and blocks autosave during hydration.
-  const isRestoringRef = useRef(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   const restoreAttemptedRef = useRef(false);
 
   useEffect(() => {
@@ -207,7 +207,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
     restoreAttemptedRef.current = true;
 
     async function restore() {
-      isRestoringRef.current = true;
+      setIsRestoring(true);
       try {
         const response = await fetch(`/api/projects/${projectId}/canvas`);
         if (!response.ok) return;
@@ -245,7 +245,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
       } catch (err) {
         console.error("[CanvasFlow] restore failed", err);
       } finally {
-        isRestoringRef.current = false;
+        setIsRestoring(false);
       }
     }
 
@@ -267,22 +267,28 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
     projectId,
     nodes,
     edges,
-    enabled: autosaveEnabled && !isRestoringRef.current,
+    enabled: autosaveEnabled && !isRestoring,
   });
 
   // Liveblocks presence
   const updateMyPresence = useUpdateMyPresence();
   const others = useOthers();
 
-  // Derive collaborator list (exclude self) for presence cluster
+  // Derive collaborator list (exclude self) for presence cluster.
+  // Ghost AI users are identified by the convention ghost-ai:<projectId>.
   const collaborators: CollaboratorInfo[] = others
     .filter((o) => o.id !== currentUserId)
-    .map((o) => ({
-      id: String(o.connectionId),
-      displayName: o.info?.displayName || "Collaborator",
-      avatarUrl: o.info?.avatarUrl || null,
-      cursorColor: o.info?.cursorColor || FALLBACK_CURSOR_COLOR,
-    }));
+    .map((o) => {
+      const isGhostAi = o.id === `ghost-ai:${projectId}`;
+      return {
+        id: String(o.connectionId),
+        displayName: o.info?.displayName || (isGhostAi ? "Ghost AI" : "Collaborator"),
+        avatarUrl: isGhostAi ? null : (o.info?.avatarUrl || null),
+        cursorColor: o.info?.cursorColor || FALLBACK_CURSOR_COLOR,
+        thinking: o.presence?.thinking ?? false,
+        isGhostAi,
+      };
+    });
 
   // Derive cursor participants (exclude self) for live cursor layer
   const cursorParticipants: CursorParticipant[] = others
@@ -292,6 +298,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
       displayName: o.info?.displayName || "Collaborator",
       cursorColor: o.info?.cursorColor || FALLBACK_CURSOR_COLOR,
       cursor: o.presence?.cursor ?? null,
+      thinking: o.presence?.thinking ?? false,
     }));
 
   // Cursor broadcasting handlers
@@ -401,6 +408,76 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
     flowInstanceRef.current?.fitView({ duration: 300, padding: 0.1 });
   }, []);
 
+  // Organize: lay out all nodes in the chosen direction. Commits node positions
+  // through onNodesChange and resets edge bend points (centerX/centerY) and
+  // label positions (labelT) — those are stored as absolute canvas coordinates
+  // and would otherwise leave edges zig-zagging through the old layout.
+  const handleOrganize = useCallback(
+    (direction: LayoutDirection) => {
+      if (nodes.length === 0) return;
+
+      const layout = computeOrganizedLayout(
+        nodes.map((n) => ({
+          id: n.id,
+          width: n.width ?? null,
+          height: n.height ?? null,
+          measured: n.measured ?? null,
+        })),
+        edges.map((e) => ({ source: e.source, target: e.target })),
+        direction,
+      );
+
+      const nodeChanges = nodes
+        .map((n) => {
+          const next = layout.get(n.id);
+          if (!next) return null;
+          if (n.position.x === next.x && n.position.y === next.y) return null;
+          return {
+            id: n.id,
+            type: "position" as const,
+            position: next,
+            dragging: false,
+          };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== null);
+
+      if (nodeChanges.length > 0) onNodesChange(nodeChanges);
+
+      // Clear stale bend points and label positions so smooth-step routing
+      // recomputes against the new node positions. Use remove+add (same pattern
+      // as handleReconnect) so Liveblocks Storage syncs the cleared fields.
+      const dirtyEdges = edges.filter((e) => {
+        const d = e.data;
+        return d !== undefined && (
+          d.centerX !== undefined ||
+          d.centerY !== undefined ||
+          d.labelT !== undefined
+        );
+      });
+
+      if (dirtyEdges.length > 0) {
+        const edgeChanges = dirtyEdges.flatMap((e) => {
+          const { centerX: _cx, centerY: _cy, labelT: _lt, ...restData } = e.data ?? {};
+          const cleaned: CanvasEdgeFlowType = {
+            ...e,
+            data: restData as CanvasEdgeData,
+            selected: false,
+          };
+          return [
+            { type: "remove" as const, id: e.id },
+            { type: "add" as const, item: cleaned },
+          ];
+        });
+        onEdgesChange(edgeChanges);
+      }
+
+      setTimeout(() => {
+        flowInstanceRef.current?.fitView({ duration: 400, padding: 0.15 });
+      }, 80);
+    },
+    [nodes, edges, onNodesChange, onEdgesChange],
+  );
+
   const handleInit = useCallback((instance: ReactFlowInstance<CanvasFlowNode, CanvasEdgeFlowType>) => {
     flowInstanceRef.current = instance;
   }, []);
@@ -442,6 +519,22 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
   useEffect(() => {
     onImportReady?.(stableImportFn);
   }, [onImportReady, stableImportFn]);
+
+  // Canvas snapshot: always reflects the latest nodes/edges at call time
+  const snapshotRef = useRef<{ nodes: CanvasFlowNode[]; edges: CanvasEdgeFlowType[] }>({ nodes: [], edges: [] });
+  useLayoutEffect(() => {
+    snapshotRef.current = { nodes, edges };
+  });
+  const stableGetSnapshot = useCallback((): CanvasSnapshot => snapshotRef.current, []);
+  useEffect(() => {
+    onCanvasReady?.(stableGetSnapshot);
+  }, [onCanvasReady, stableGetSnapshot]);
+
+  // Forward AI_STATUS events to the sidebar
+  useEventListener(({ event }) => {
+    if (event.type !== "AI_STATUS" || event.projectId !== projectId) return;
+    onAiStatusEvent?.(event);
+  });
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -543,15 +636,14 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
         selectionMode={SelectionMode.Partial}
         deleteKeyCode={null}
         fitView
-        style={{ background: "var(--bg-base)" }}
+        style={{ background: "var(--bg-canvas)" }}
       >
         <CoordinateBridge screenToFlowRef={screenToFlowRef} />
         <Background
           variant={BackgroundVariant.Dots}
           gap={24}
           size={1}
-          color="var(--text-primary)"
-          style={{ opacity: 0.08 }}
+          color="var(--canvas-grid-default)"
         />
         <LiveCursorLayer participants={cursorParticipants} />
       </ReactFlow>
@@ -575,6 +667,7 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onOrganize={handleOrganize}
       />
       <CanvasSaveStatus
         saveStatus={saveStatus}
@@ -587,64 +680,26 @@ function CanvasFlow({ projectId, currentUserId, onImportReady }: CanvasFlowProps
   );
 }
 
-// --- Canvas (Liveblocks + Room provider wrapper) ---
+// --- Canvas (inner flow, providers live in WorkspaceShell) ---
 
 interface CanvasProps {
   roomId: string;
+  currentUserId: string;
   onImportReady?: (fn: (template: CanvasTemplate) => void) => void;
+  onAiStatusEvent?: (event: AiStatusEvent) => void;
+  onCanvasReady?: (getSnapshot: () => CanvasSnapshot) => void;
 }
 
-export function Canvas({ roomId, onImportReady }: CanvasProps) {
-  const { user, isLoaded } = useUser();
-
-  const authEndpoint = useCallback(
-    async (room: string | undefined) => {
-      if (!user) return { error: "forbidden", reason: "Not authenticated" };
-
-      const displayName =
-        user.fullName ??
-        user.emailAddresses[0]?.emailAddress ??
-        "Anonymous";
-
-      const response = await fetch("/api/liveblocks-auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          roomId: room ?? roomId,
-          displayName,
-          avatarUrl: user.imageUrl ?? "",
-        }),
-      });
-
-      if (response.status === 403) {
-        return { error: "forbidden", reason: "Access denied" };
-      }
-
-      return response.json();
-    },
-    [user, roomId]
-  );
-
-  if (!isLoaded) return <CanvasLoading />;
-  if (!user) return <CanvasError />;
-
+export function Canvas({ roomId, currentUserId, onImportReady, onAiStatusEvent, onCanvasReady }: CanvasProps) {
   return (
-    <LiveblocksProvider authEndpoint={authEndpoint}>
-      <RoomProvider
-        id={roomId}
-        initialPresence={{ cursor: null, thinking: false }}
-      >
-        <CanvasErrorBoundary fallback={<CanvasError />}>
-          <ClientSideSuspense fallback={<CanvasLoading />}>
-            <CanvasFlow
-              projectId={roomId}
-              currentUserId={user.id}
-              onImportReady={onImportReady}
-            />
-          </ClientSideSuspense>
-        </CanvasErrorBoundary>
-      </RoomProvider>
-    </LiveblocksProvider>
+    <CanvasErrorBoundary fallback={<CanvasError />}>
+      <CanvasFlow
+        projectId={roomId}
+        currentUserId={currentUserId}
+        onImportReady={onImportReady}
+        onAiStatusEvent={onAiStatusEvent}
+        onCanvasReady={onCanvasReady}
+      />
+    </CanvasErrorBoundary>
   );
 }

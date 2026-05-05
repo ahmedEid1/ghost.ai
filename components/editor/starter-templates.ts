@@ -17,14 +17,14 @@ export interface CanvasTemplate {
 
 // ─── Color aliases ────────────────────────────────────────────────────────────
 
-const C_DEFAULT  = NODE_COLORS[0]; // #1F1F1F / #EDEDED
-const C_BLUE     = NODE_COLORS[1]; // #10233D / #52A8FF
-const C_PURPLE   = NODE_COLORS[2]; // #2E1938 / #BF7AF0
-const C_ORANGE   = NODE_COLORS[3]; // #331B00 / #FF990A
-const C_RED      = NODE_COLORS[4]; // #3C1618 / #FF6166
-const C_PINK     = NODE_COLORS[5]; // #3A1726 / #F75F8F
-const C_GREEN    = NODE_COLORS[6]; // #0F2E18 / #62C073
-const C_TEAL     = NODE_COLORS[7]; // #062822 / #0AC7B4
+const C_DEFAULT  = NODE_COLORS[0];
+const C_BLUE     = NODE_COLORS[1];
+const C_PURPLE   = NODE_COLORS[2];
+const C_ORANGE   = NODE_COLORS[3];
+const C_RED      = NODE_COLORS[4];
+const C_PINK     = NODE_COLORS[5];
+const C_GREEN    = NODE_COLORS[6];
+const C_TEAL     = NODE_COLORS[7];
 
 // ─── Default edge data ────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ function edge(
     targetHandle: targetHandle ?? null,
     data: {
       routing: "smoothstep",
-      color: "rgba(255,255,255,0.55)",
+      color: "var(--canvas-edge-default)",
       strokeWidth: 1.5,
       strokeDash: "solid",
       arrowStart: false,

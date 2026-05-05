@@ -159,7 +159,7 @@ export function CanvasNode({ id, data, selected }: NodeProps<CanvasNodeType>) {
           height: 9,
           borderRadius: 3,
           background: "var(--accent-primary)",
-          border: "1.5px solid var(--bg-base)",
+          border: "1.5px solid var(--bg-canvas)",
           opacity: 0.85,
         }}
         lineStyle={{

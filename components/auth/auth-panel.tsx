@@ -1,102 +1,169 @@
-import { Ghost, Sparkles, Users, FileCode } from "lucide-react";
+import Link from "next/link";
+import { BrainCircuit, FileCode, GitBranch, Ghost, Sparkles, Users, Palette } from "lucide-react";
 
-const features = [
-  {
-    Icon: Sparkles,
-    label: "AI-powered canvas",
-    desc: "Describe your architecture in plain English — Ghost maps it instantly.",
-  },
-  {
-    Icon: Users,
-    label: "Real-time collaboration",
-    desc: "Invite teammates to co-design and annotate in shared workspaces.",
-  },
-  {
-    Icon: FileCode,
-    label: "Auto-generate specs",
-    desc: "Export clean technical documentation directly from your canvas.",
-  },
+const proofPoints = [
+  { Icon: BrainCircuit, label: "Claude agent", value: "validated plans" },
+  { Icon: Users, label: "Liveblocks", value: "multiplayer canvas" },
+  { Icon: FileCode, label: "Specs", value: "Markdown artifacts" },
+];
+
+const previewNodes = [
+  { label: "Client", className: "left-8 top-8 border-accent-collab/60 bg-accent-collab-dim text-accent-collab" },
+  { label: "API", className: "left-36 top-20 border-accent-primary/60 bg-accent-primary-dim text-accent-primary" },
+  { label: "Jobs", className: "right-8 top-10 border-accent-ai/60 bg-accent-ai-dim text-accent-ai-text" },
+  { label: "Postgres", className: "left-16 bottom-10 border-state-success/50 bg-state-success/10 text-state-success" },
+  { label: "Blob", className: "right-16 bottom-12 border-state-warning/50 bg-state-warning/10 text-state-warning" },
 ];
 
 export function AuthPanel() {
   return (
-    <div className="hidden lg:flex lg:w-[52%] xl:w-[55%] relative flex-col justify-between p-14 overflow-hidden bg-surface border-r border-border-default">
-      {/* Ambient glow layers */}
+    <div className="relative hidden overflow-hidden border-r border-border-default bg-surface p-10 lg:flex lg:w-[52%] xl:w-[55%]">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 55% at 15% 25%, rgba(0,200,212,0.07) 0%, transparent 65%), radial-gradient(ellipse 55% 45% at 85% 75%, rgba(100,87,249,0.08) 0%, transparent 60%)",
-        }}
-      />
-      {/* Subtle grid */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="absolute inset-0 opacity-70"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)",
-          backgroundSize: "44px 44px",
-        }}
-      />
-      {/* Top-edge accent line */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-14 right-14 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(0,200,212,0.35) 40%, rgba(100,87,249,0.3) 70%, transparent 100%)",
+            "linear-gradient(var(--border-default) 1px, transparent 1px), linear-gradient(90deg, var(--border-default) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "linear-gradient(to bottom, var(--text-primary), transparent 85%)",
         }}
       />
 
-      {/* Logo */}
-      <div className="relative z-10 flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-primary-dim border border-border-subtle">
-          <Ghost className="h-4 w-4 text-accent-primary" />
-        </div>
-        <span className="text-base font-bold text-text-primary tracking-tight">
-          Ghost<span className="text-accent-primary">AI</span>
-        </span>
-      </div>
-
-      {/* Hero + features */}
-      <div className="relative z-10 space-y-10">
-        <div className="space-y-4">
-          <h1 className="text-[2.6rem] font-bold text-text-primary leading-[1.12] tracking-tight">
-            Design systems,
-            <br />
-            <span className="text-accent-primary">not diagrams.</span>
-          </h1>
-          <p className="text-text-secondary text-[15px] leading-relaxed max-w-[360px]">
-            Describe your architecture in plain English. Ghost AI maps it onto a
-            collaborative canvas and generates a ready-to-share technical spec.
-          </p>
+      <div className="relative z-10 flex min-h-full w-full flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border-default bg-accent-primary-dim transition-all duration-200 hover:border-accent-primary hover:bg-accent-primary hover:bg-opacity-20">
+              <Ghost className="h-4 w-4 text-accent-primary" />
+            </div>
+            <span className="text-base font-bold text-text-primary">
+              Ghost<span className="text-accent-primary">AI</span>
+            </span>
+          </div>
+          <Link
+            href="/ui-showcase"
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-elevated px-2.5 py-1.5 text-xs font-medium text-text-secondary transition-all duration-150 hover:border-accent-primary hover:bg-accent-primary-dim hover:text-accent-primary"
+            title="View design system"
+          >
+            <Palette className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Design System</span>
+          </Link>
         </div>
 
-        <div className="space-y-5">
-          {features.map(({ Icon, label, desc }) => (
-            <div key={label} className="flex items-start gap-3.5">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-accent-primary-dim border border-border-default">
-                <Icon className="h-3.5 w-3.5 text-accent-primary" />
+        <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
+          <div className="max-w-md space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border-default bg-elevated px-3 py-1 text-xs font-medium text-text-secondary animate-fade-in">
+              <Sparkles className="h-3.5 w-3.5 text-accent-ai-text" />
+              Applied AI system design studio
+            </div>
+            <div className="space-y-3">
+              <h1 className="text-[2.7rem] font-semibold leading-[1.05] text-text-primary">
+                Ship the architecture, not just the idea.
+              </h1>
+              <p className="max-w-sm text-[15px] leading-7 text-text-secondary">
+                Prompt Ghost AI, refine the shared canvas, and export the technical spec that proves the system is buildable.
+              </p>
+            </div>
+          </div>
+
+          <div className="studio-panel-strong relative min-h-[360px] overflow-hidden rounded-3xl bg-surface p-4 animate-slide-in-right">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-ai-dim">
+                  <BrainCircuit className="h-4 w-4 text-accent-ai-text" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-text-primary">Architecture run</p>
+                  <p className="text-xs text-text-muted">planning with validated canvas mutations</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary mb-0.5">
-                  {label}
-                </p>
-                <p className="text-[13px] text-text-muted leading-relaxed">
-                  {desc}
-                </p>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-state-success/10 px-2 py-1 text-[11px] font-medium text-state-success">
+                <span
+                  aria-hidden
+                  className="ghost-pulse-dot block h-1.5 w-1.5 rounded-full bg-state-success"
+                />
+                live
+              </span>
+            </div>
+
+            <div className="relative h-60 overflow-hidden rounded-2xl bg-canvas">
+              <div
+                aria-hidden
+                className="absolute inset-0 opacity-35"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, var(--canvas-grid-soft) 1px, transparent 1px), linear-gradient(to bottom, var(--canvas-grid-soft) 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
+                }}
+              />
+              <svg className="absolute inset-0 h-full w-full" aria-hidden>
+                <path
+                  d="M74 62 C132 70 143 96 180 112"
+                  fill="none"
+                  stroke="var(--canvas-edge-soft)"
+                  strokeWidth="1.6"
+                  className="ghost-flow-dashed"
+                />
+                <path
+                  d="M206 112 C244 92 266 78 308 66"
+                  fill="none"
+                  stroke="var(--canvas-edge-soft)"
+                  strokeWidth="1.6"
+                  className="ghost-flow-dashed"
+                  style={{ animationDelay: "0.4s" }}
+                />
+                <path
+                  d="M180 130 C142 158 126 174 104 198"
+                  fill="none"
+                  stroke="var(--canvas-edge-soft)"
+                  strokeWidth="1.4"
+                  className="ghost-flow-dashed"
+                  style={{ animationDelay: "0.2s", opacity: 0.82 }}
+                />
+                <path
+                  d="M218 130 C255 160 273 176 292 196"
+                  fill="none"
+                  stroke="var(--canvas-edge-soft)"
+                  strokeWidth="1.4"
+                  className="ghost-flow-dashed"
+                  style={{ animationDelay: "0.6s", opacity: 0.82 }}
+                />
+              </svg>
+              {previewNodes.map((node) => (
+                <div
+                  key={node.label}
+                  className={`absolute rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 ${node.className}`}
+                >
+                  {node.label}
+                </div>
+              ))}
+              <div
+                className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium text-text-inverse shadow-[var(--shadow-canvas-panel)] backdrop-blur transition-all duration-200"
+                style={{
+                  background: "var(--canvas-glass-bg)",
+                  borderColor: "var(--canvas-glass-border)",
+                }}
+              >
+                <GitBranch className="h-3.5 w-3.5" />
+                Ghost applies graph updates
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Footer */}
-      <p className="relative z-10 text-xs text-text-faint">
-        © 2026 GhostAI · All rights reserved.
-      </p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {proofPoints.map(({ Icon, label, value }) => (
+                <div key={label} className="rounded-2xl border border-border-default bg-elevated px-3 py-2 transition-all duration-150 hover:border-accent-primary hover:bg-accent-primary-faint">
+                  <Icon className="mb-2 h-4 w-4 text-accent-primary" />
+                  <p className="text-[11px] font-semibold text-text-primary">{label}</p>
+                  <p className="truncate text-[10px] text-text-muted">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="text-xs text-text-faint">
+          Portfolio-grade full-stack AI product. <Link href="/ui-showcase" className="font-medium text-accent-primary hover:underline">View design tokens</Link>
+        </p>
+      </div>
     </div>
   );
 }

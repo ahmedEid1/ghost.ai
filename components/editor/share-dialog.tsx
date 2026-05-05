@@ -83,13 +83,21 @@ export function ShareDialog({
   }, [projectId]);
 
   useEffect(() => {
-    if (open) {
-      fetchCollaborators();
+    if (!open) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      void fetchCollaborators();
       setInviteEmail("");
       setInviteError(null);
       setInviteSuccess(false);
       setCopied(false);
-    }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [open, fetchCollaborators]);
 
   async function handleInvite(e: React.FormEvent) {
@@ -157,7 +165,7 @@ export function ShareDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="bg-elevated border border-border-default rounded-3xl max-w-md w-full"
+        className="w-full max-w-md rounded-3xl border border-border-default bg-surface shadow-[var(--shadow-panel)]"
       >
         <DialogHeader>
           <div className="flex items-center justify-between gap-2">
@@ -183,9 +191,7 @@ export function ShareDialog({
         {/* Copy link */}
         <div className="flex items-center gap-2 rounded-xl border border-border-default bg-surface px-3 py-2">
           <span className="flex-1 truncate font-mono text-xs text-text-muted">
-            {typeof window !== "undefined"
-              ? `${window.location.origin}/editor/${projectId}`
-              : `/editor/${projectId}`}
+            /editor/{projectId}
           </span>
           <Button
             variant="ghost"
@@ -196,10 +202,9 @@ export function ShareDialog({
                 : "text-text-muted hover:text-text-primary"
             }`}
             onClick={handleCopyLink}
-            style={copied ? { color: "var(--state-success)" } : undefined}
           >
             {copied ? (
-              <Check className="h-3.5 w-3.5" />
+              <Check className="h-3.5 w-3.5 motion-safe:animate-in motion-safe:zoom-in-75 motion-safe:duration-200" />
             ) : (
               <Copy className="h-3.5 w-3.5" />
             )}
@@ -230,7 +235,7 @@ export function ShareDialog({
                 disabled={isInviting || !inviteEmail.trim()}
               >
                 <UserPlus className="h-3.5 w-3.5" />
-                {isInviting ? "Inviting…" : "Invite"}
+                {isInviting ? "Inviting..." : "Invite"}
               </Button>
             </form>
             {inviteError && (
@@ -258,7 +263,7 @@ export function ShareDialog({
           <p className="px-1 text-xs font-medium uppercase tracking-wider text-text-muted">
             {isLoading
               ? "Members"
-              : `Members · ${
+              : `Members - ${
                   collaborators.length + (owner ? 1 : 0)
                 }`}
           </p>
@@ -378,8 +383,7 @@ function MemberRow({
           <Button
             variant="ghost"
             size="icon-sm"
-            className="h-7 w-7 text-text-muted opacity-0 transition-opacity hover:text-state-error group-hover:opacity-100"
-            style={{ "--tw-text-opacity": "1" } as React.CSSProperties}
+            className="h-7 w-7 text-text-muted opacity-0 transition-opacity hover:text-state-error group-hover:opacity-100 focus-visible:opacity-100"
             onClick={onRemove}
             disabled={isRemoving}
             aria-label={`Remove ${displayName}`}

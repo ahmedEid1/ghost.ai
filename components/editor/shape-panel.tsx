@@ -151,7 +151,7 @@ function ShapeButton({ shape, onDragStart, onDragEnd }: ShapeButtonProps) {
       <span
         className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border px-2 py-1 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
         style={{
-          background: "var(--bg-elevated)",
+          background: "var(--bg-surface)",
           borderColor: "var(--border-default)",
           color: "var(--text-secondary)",
         }}
@@ -166,7 +166,7 @@ function ShapeButton({ shape, onDragStart, onDragEnd }: ShapeButtonProps) {
         onDragEnd={onDragEnd}
         title={SHAPE_LABELS[shape]}
         aria-label={SHAPE_LABELS[shape]}
-        className="flex h-9 w-9 cursor-grab items-center justify-center rounded-xl transition-colors active:cursor-grabbing"
+        className="flex h-9 w-9 cursor-grab items-center justify-center rounded-xl transition-all duration-150 hover:-translate-y-0.5 active:cursor-grabbing"
         style={{ color: "var(--text-muted)" }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-subtle)";
@@ -226,11 +226,7 @@ export function ShapePanel() {
 
       <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
         <div
-          className="pointer-events-auto flex items-center gap-1 rounded-full border px-3 py-2 shadow-2xl"
-          style={{
-            background: "var(--bg-elevated)",
-            borderColor: "var(--border-default)",
-          }}
+          className="canvas-panel pointer-events-auto flex items-center gap-1 rounded-2xl px-3 py-2"
         >
           {NODE_SHAPES.map((shape) => (
             <ShapeButton

@@ -9,9 +9,9 @@ interface AiSidebarHeaderProps {
 
 export function AiSidebarHeader({ onClose }: AiSidebarHeaderProps) {
   return (
-    <div className="flex shrink-0 items-center justify-between border-b border-border-default px-4 py-3">
+    <div className="flex shrink-0 items-center justify-between border-b border-border-default bg-surface px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-primary-dim">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-ai-dim">
           <Bot className="h-4 w-4 text-accent-ai-text" />
         </div>
         <div className="flex flex-col leading-tight">

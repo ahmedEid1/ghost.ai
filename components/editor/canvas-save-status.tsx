@@ -43,11 +43,9 @@ export function CanvasSaveStatus({
 
   return (
     <div
-      className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 rounded-xl px-2 py-1.5"
+      className="canvas-panel absolute bottom-4 right-4 z-10 flex items-center gap-1.5 rounded-2xl px-2 py-1.5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200"
       style={{
-        background: "var(--bg-surface)",
-        border: `1px solid ${isError ? "var(--status-error)" : "var(--border-default)"}`,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+        borderColor: isError ? "var(--state-error)" : "var(--border-default)",
         opacity: isPending && !isSaving ? 0.7 : 1,
         transition: "opacity 0.2s ease, border-color 0.2s ease",
       }}
@@ -61,7 +59,7 @@ export function CanvasSaveStatus({
         aria-label={isError ? "Retry save (Ctrl+S)" : "Save canvas (Ctrl+S)"}
         title={isError ? "Retry (Ctrl+S)" : "Save now (Ctrl+S)"}
         className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-elevated disabled:cursor-not-allowed"
-        style={{ color: isError ? "var(--status-error)" : isSaving ? "var(--text-muted)" : isPending ? "var(--text-muted)" : "var(--accent-primary)" }}
+        style={{ color: isError ? "var(--state-error)" : isSaving ? "var(--text-muted)" : isPending ? "var(--text-muted)" : "var(--accent-primary)" }}
       >
         {isSaving ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
@@ -88,17 +86,17 @@ export function CanvasSaveStatus({
         aria-label={statusLabel(saveStatus, lastSavedAt)}
       >
         {isSaving && (
-          <span style={{ color: "var(--text-muted)" }}>Saving…</span>
+          <span style={{ color: "var(--text-muted)" }}>Saving...</span>
         )}
 
         {isError && (
           <>
-            <span style={{ color: "var(--status-error)" }}>Save failed</span>
+            <span style={{ color: "var(--state-error)" }}>Save failed</span>
             <Dot className="h-3 w-3 flex-shrink-0" style={{ color: "var(--text-muted)" }} aria-hidden />
             <button
               onClick={onSave}
               className="underline underline-offset-2 transition-opacity hover:opacity-80"
-              style={{ color: "var(--status-error)" }}
+              style={{ color: "var(--state-error)" }}
               aria-label="Retry save"
             >
               Retry
@@ -128,7 +126,7 @@ export function CanvasSaveStatus({
 
 function statusLabel(status: SaveStatus, lastSavedAt: Date | null): string {
   switch (status) {
-    case "saving": return "Saving canvas…";
+    case "saving": return "Saving canvas...";
     case "saved": return lastSavedAt ? `Canvas saved ${timeAgo(lastSavedAt)}` : "Canvas saved";
     case "error": return "Canvas save failed";
     case "pending": return "Unsaved changes";

@@ -7,6 +7,7 @@ export interface CursorParticipant {
   displayName: string;
   cursorColor: string;
   cursor: { x: number; y: number } | null;
+  thinking: boolean;
 }
 
 interface SingleCursorProps {
@@ -16,11 +17,34 @@ interface SingleCursorProps {
   vpY: number;
 }
 
+function ThinkingSpinner({ color }: { color: string }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4, flexShrink: 0 }}
+      aria-hidden
+    >
+      <circle
+        cx="5"
+        cy="5"
+        r="3.5"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeDasharray="11 5"
+        strokeLinecap="round"
+        style={{ transformOrigin: "50% 50%", animation: "cursor-spin 0.75s linear infinite" }}
+      />
+    </svg>
+  );
+}
+
 function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
-  const { cursor, cursorColor, displayName } = participant;
+  const { cursor, cursorColor, displayName, thinking } = participant;
   if (!cursor) return null;
 
-  // Convert flow coordinates to container-relative pixel position
   const screenX = cursor.x * zoom + vpX;
   const screenY = cursor.y * zoom + vpY;
 
@@ -49,28 +73,32 @@ function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
         <path
           d="M0 0L0 14L4 10.5L6.5 16L8.5 15L6 9.5H11L0 0Z"
           fill={cursorColor}
-          stroke="rgba(0,0,0,0.4)"
+          stroke="var(--bg-overlay)"
           strokeWidth="0.75"
         />
       </svg>
 
-      {/* Name badge */}
+      {/* Name badge — stable min-width so it doesn't jitter during presence updates */}
       <div
         style={{
           position: "absolute",
           top: 14,
           left: 14,
+          display: "flex",
+          alignItems: "center",
+          minWidth: 60,
           padding: "2px 8px",
           borderRadius: 6,
           background: cursorColor,
-          color: "#fff",
+          color: "var(--text-inverse)",
           fontSize: 11,
           fontWeight: 600,
           lineHeight: "20px",
           whiteSpace: "nowrap",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+          boxShadow: "0 1px 3px var(--bg-overlay)",
         }}
       >
+        {thinking && <ThinkingSpinner color="rgb(255 255 255 / 85%)" />}
         {displayName}
       </div>
     </div>

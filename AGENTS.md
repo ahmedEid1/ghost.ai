@@ -1,22 +1,15 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# Ghost AI — Agent Context
 
-# This is NOT the Next.js you know
+## Before you start
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+**Next.js 16 note:** This project uses Next.js 16 with breaking changes from your training data. Read `node_modules/next/dist/docs/` before modifying Next-specific APIs.
 
-<!-- END:nextjs-agent-rules -->
+## Context files
 
-## Application Building Context
+Read in order:
 
-Read the following files in order before implementing or making any architectural decision:
+1. **`context/ghost-ai.md`** — Product, architecture, invariants, coding standards, design system. The single source of truth.
+2. **`context/tracker.md`** — Workflow, current phase, completed work, next steps.
+3. **`context/features/`** — Per-feature briefs (F1–F9). Reference when touching a known feature.
 
-1. `context/project-overview.md` — product definition, goals, features, and scope
-2. `context/architecture-context.md` — system structure, boundaries, storage model, and invariants
-3. `context/ui-context.md` — theme, colors, typography, canvas design, and component conventions
-4. `context/code-standards.md` — implementation rules and conventions
-5. `context/ai-workflow-rules.md` — development workflow, scoping rules, and delivery approach
-6. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
-
-Update `context/progress-tracker.md` after each meaningful implementation change.
-
-If implementation changes the architecture, scope, or standards documented in the context files, update the relevant file before continuing.
+**Update the context file when product scope, architecture, or standards change — before implementation.**

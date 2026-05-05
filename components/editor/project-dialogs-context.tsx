@@ -1,10 +1,17 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import { type Project } from "@/lib/types";
 
 interface ProjectDialogsContextValue {
   openCreateDialog: () => void;
   openSidebar: () => void;
+  projects: Project[];
+  openEditDialog: (project: Project) => void;
+  openDeleteDialog: (project: Project) => void;
+  openShareDialog: (project: Project) => void;
+  duplicateProject: (project: Project) => Promise<void>;
+  syncProject: (project: Project) => void;
 }
 
 export const ProjectDialogsContext =

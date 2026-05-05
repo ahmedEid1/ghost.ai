@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   CANVAS_TEMPLATES,
@@ -16,7 +15,7 @@ import {
   type CanvasTemplateNode,
 } from "@/components/editor/starter-templates";
 
-// ─── Preview geometry helpers ─────────────────────────────────────────────────
+// Preview geometry helpers
 
 interface Bounds {
   minX: number; minY: number; maxX: number; maxY: number;
@@ -36,7 +35,7 @@ function getTemplateBounds(nodes: CanvasTemplateNode[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-// ─── Canvas-style SVG diagram preview ────────────────────────────────────────
+// Canvas-style SVG diagram preview
 
 const PW = 340;  // preview width
 const PH = 192;  // preview height
@@ -90,7 +89,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
       <defs>
         {/* Canvas-style dot grid */}
         <pattern id={`dots-${tid}`} width="14" height="14" patternUnits="userSpaceOnUse">
-          <circle cx="7" cy="7" r="0.85" fill="rgba(240,240,244,0.09)" />
+          <circle cx="7" cy="7" r="0.85" fill="var(--canvas-grid-soft)" />
         </pattern>
 
         {/* Arrowhead marker */}
@@ -103,7 +102,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
           orient="auto"
           markerUnits="strokeWidth"
         >
-          <path d="M0,0.5 L0,5.5 L5.5,3 Z" fill="rgba(255,255,255,0.38)" />
+          <path d="M0,0.5 L0,5.5 L5.5,3 Z" fill="var(--canvas-edge-soft)" />
         </marker>
 
         {/* Per-node clip paths */}
@@ -118,11 +117,11 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
       </defs>
 
       {/* Background */}
-      <rect width={PW} height={PH} style={{ fill: "var(--bg-base)" }} />
+      <rect width={PW} height={PH} style={{ fill: "var(--bg-canvas)" }} />
       <rect width={PW} height={PH} fill={`url(#dots-${tid})`} />
 
-      {/* Edges — drawn below nodes */}
-      {template.edges.map((edg) => {
+      {/* Edges drawn below nodes */}
+      {template.edges.map((edg, idx) => {
         const src = geomMap[edg.source];
         const tgt = geomMap[edg.target];
         if (!src || !tgt) return null;
@@ -136,10 +135,12 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
             y1={src.cy}
             x2={tgt.cx}
             y2={tgt.cy}
-            stroke="rgba(255,255,255,0.28)"
+            stroke="var(--canvas-edge-soft)"
             strokeWidth={1}
-            strokeDasharray={isDashed ? "3 2.5" : undefined}
+            strokeDasharray={isDashed ? "3 2.5" : "5 4"}
             markerEnd={`url(#arrow-${tid})`}
+            className="ghost-flow-anim"
+            style={{ animationDelay: `${(idx * 0.18).toFixed(2)}s` }}
           />
         );
       })}
@@ -237,7 +238,7 @@ function TemplatePreview({ template }: { template: CanvasTemplate }) {
   );
 }
 
-// ─── Template card ────────────────────────────────────────────────────────────
+// Template card
 
 interface TemplateCardProps {
   template: CanvasTemplate;
@@ -247,20 +248,15 @@ interface TemplateCardProps {
 function TemplateCard({ template, onImport }: TemplateCardProps) {
   return (
     <div
-      className="group flex flex-col overflow-hidden rounded-2xl border transition-all duration-200"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border bg-surface shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-primary/40 hover:shadow-[var(--shadow-panel)]"
       style={{
-        background: "var(--bg-elevated)",
         borderColor: "var(--border-default)",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(0,200,212,0.35)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 0 1px rgba(0,200,212,0.18), 0 8px 24px rgba(0,0,0,0.4)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-default)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "";
-      }}
     >
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 z-10 h-0.5 origin-left scale-x-0 bg-accent-primary transition-transform duration-300 ease-out group-hover:scale-x-100"
+      />
       {/* Canvas-style diagram preview */}
       <div className="overflow-hidden" style={{ lineHeight: 0 }}>
         <TemplatePreview template={template} />
@@ -288,21 +284,11 @@ function TemplateCard({ template, onImport }: TemplateCardProps) {
 
         <div className="mt-auto flex flex-col gap-2">
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            {template.nodes.length} nodes · {template.edges.length} edges
+            {template.nodes.length} nodes - {template.edges.length} edges
           </p>
           <button
             onClick={() => onImport(template)}
-            className="w-full rounded-xl py-2 text-xs font-semibold transition-all duration-150 active:scale-[0.98]"
-            style={{
-              background: "var(--accent-primary)",
-              color: "var(--bg-base)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = "0.88";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = "1";
-            }}
+            className="w-full rounded-xl bg-accent-primary py-2 text-xs font-semibold text-text-inverse transition-all duration-150 hover:opacity-[0.88] active:scale-[0.98]"
           >
             Use template
           </button>
@@ -312,7 +298,7 @@ function TemplateCard({ template, onImport }: TemplateCardProps) {
   );
 }
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// Modal
 
 interface StarterTemplatesModalProps {
   open: boolean;
@@ -333,7 +319,7 @@ export function StarterTemplatesModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[88vh] flex-col gap-0 overflow-hidden p-0 rounded-3xl sm:max-w-[72rem]"
+        className="flex max-h-[88vh] flex-col gap-0 overflow-hidden rounded-3xl p-0 shadow-[var(--shadow-panel)] sm:max-w-[72rem]"
         style={{
           background: "var(--bg-surface)",
           borderColor: "var(--border-subtle)",

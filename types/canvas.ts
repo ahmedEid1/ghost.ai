@@ -5,14 +5,14 @@ export interface NodeColor {
 }
 
 export const NODE_COLORS = [
-  { fill: "#1F1F1F", text: "#EDEDED", name: "Dark"   },
-  { fill: "#10233D", text: "#52A8FF", name: "Blue"   },
-  { fill: "#2E1938", text: "#BF7AF0", name: "Purple" },
-  { fill: "#331B00", text: "#FF990A", name: "Orange" },
-  { fill: "#3C1618", text: "#FF6166", name: "Red"    },
-  { fill: "#3A1726", text: "#F75F8F", name: "Pink"   },
-  { fill: "#0F2E18", text: "#62C073", name: "Green"  },
-  { fill: "#062822", text: "#0AC7B4", name: "Teal"   },
+  { fill: "#18202F", text: "#F8FAFC", name: "Graphite" },
+  { fill: "#0F274A", text: "#93C5FD", name: "Blue"     },
+  { fill: "#2D1B55", text: "#C4B5FD", name: "Violet"   },
+  { fill: "#3A2508", text: "#FBBF24", name: "Amber"    },
+  { fill: "#3A1824", text: "#FB7185", name: "Rose"     },
+  { fill: "#331B3F", text: "#F0ABFC", name: "Fuchsia"  },
+  { fill: "#103322", text: "#86EFAC", name: "Green"    },
+  { fill: "#092F33", text: "#5EEAD4", name: "Teal"     },
 ] as const satisfies readonly NodeColor[];
 
 export type NodeShape =

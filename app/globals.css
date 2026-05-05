@@ -5,42 +5,58 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Project background tokens */
   --color-base: var(--bg-base);
+  --color-canvas: var(--bg-canvas);
   --color-surface: var(--bg-surface);
   --color-elevated: var(--bg-elevated);
   --color-subtle: var(--bg-subtle);
 
-  /* Project border tokens */
   --color-border-default: var(--border-default);
   --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
 
-  /* Project text tokens */
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
   --color-text-faint: var(--text-faint);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-disabled: var(--text-disabled);
 
-  /* Project accent tokens */
   --color-accent-primary: var(--accent-primary);
   --color-accent-primary-dim: var(--accent-primary-dim);
+  --color-accent-primary-faint: var(--accent-primary-faint);
   --color-accent-ai: var(--accent-ai);
   --color-accent-ai-text: var(--accent-ai-text);
+  --color-accent-ai-dim: var(--accent-ai-dim);
+  --color-accent-ai-faint: var(--accent-ai-faint);
+  --color-accent-collab: var(--accent-collab);
+  --color-accent-collab-dim: var(--accent-collab-dim);
+  --color-accent-collab-faint: var(--accent-collab-faint);
 
-  /* Project state tokens */
   --color-state-error: var(--state-error);
+  --color-state-error-dim: var(--state-error-dim);
   --color-state-success: var(--state-success);
+  --color-state-success-dim: var(--state-success-dim);
   --color-state-warning: var(--state-warning);
+  --color-state-warning-dim: var(--state-warning-dim);
+  --color-state-info: var(--state-info);
+  --color-state-info-dim: var(--state-info-dim);
 
-  /* shadcn semantic tokens mapped to dark theme */
+  --color-overlay: var(--bg-overlay);
+  --color-canvas-edge: var(--canvas-edge-default);
+  --color-canvas-edge-soft: var(--canvas-edge-soft);
+  --color-canvas-grid: var(--canvas-grid-default);
+  --color-canvas-grid-soft: var(--canvas-grid-soft);
+
   --color-background: var(--bg-base);
   --color-foreground: var(--text-primary);
   --color-card: var(--bg-surface);
   --color-card-foreground: var(--text-primary);
-  --color-popover: var(--bg-elevated);
+  --color-popover: var(--bg-surface);
   --color-popover-foreground: var(--text-primary);
   --color-primary: var(--accent-primary);
-  --color-primary-foreground: var(--bg-base);
+  --color-primary-foreground: var(--text-inverse);
   --color-secondary: var(--bg-elevated);
   --color-secondary-foreground: var(--text-secondary);
   --color-muted: var(--bg-subtle);
@@ -48,70 +64,121 @@
   --color-accent: var(--accent-primary-dim);
   --color-accent-foreground: var(--accent-primary);
   --color-destructive: var(--state-error);
-  --color-destructive-foreground: var(--text-primary);
+  --color-destructive-foreground: var(--text-inverse);
   --color-border: var(--border-default);
   --color-input: var(--border-subtle);
   --color-ring: var(--accent-primary);
 
-  /* Radius scale */
-  --radius-sm: 0.75rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 1.5rem;
+  /* Animation Library */
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-slide-in-top: slide-in-top 300ms ease-out;
+  --animate-slide-in-bottom: slide-in-bottom 300ms ease-out;
+  --animate-slide-in-left: slide-in-left 300ms ease-out;
+  --animate-slide-in-right: slide-in-right 300ms ease-out;
+  --animate-scale-in: scale-in 250ms ease-out;
+  --animate-pulse-ring: pulse-ring 2s ease-in-out infinite;
+  --animate-status-glow: status-glow 2s ease-in-out infinite;
+
+  --radius-sm: 0.625rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
   --radius-3xl: 1.5rem;
 
-  /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
 }
 
-/* Dark-only theme — all tokens defined once on :root, no .dark override needed */
 :root {
-  /* Project raw tokens */
-  --bg-base: #080809;
-  --bg-surface: #111114;
-  --bg-elevated: #18181c;
-  --bg-subtle: #1e1e23;
+  /* Surfaces & Backgrounds */
+  --bg-base: #f6f8fb;
+  --bg-canvas: #111827;
+  --bg-canvas-soft: #172033;
+  --bg-surface: #fff;
+  --bg-elevated: #f1f5f9;
+  --bg-subtle: #e8eef6;
+  --bg-overlay: rgb(0 0 0 / 32%);
 
-  --border-default: #2a2a30;
-  --border-subtle: #3a3a42;
+  /* Borders & Dividers */
+  --border-default: #d8e1ec;
+  --border-subtle: #c6d2e2;
+  --border-strong: #94a3b8;
+  --border-focus: #2563eb;
 
-  --text-primary: #f0f0f4;
-  --text-secondary: #c0c0cc;
-  --text-muted: #808090;
-  --text-faint: #505060;
+  /* Text & Typography */
+  --text-primary: #111827;
+  --text-secondary: #344256;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverse: #fff;
+  --text-disabled: rgb(100 116 139 / 50%);
 
-  --accent-primary: #00c8d4;
-  --accent-primary-dim: rgb(0 200 212 / 12%);
-  --accent-ai: #6457f9;
-  --accent-ai-text: #8b82ff;
+  /* Primary Brand (Actions, Focus, Navigation) */
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+  --accent-primary-active: #1e40af;
+  --accent-primary-dim: rgb(37 99 235 / 10%);
+  --accent-primary-faint: rgb(37 99 235 / 5%);
 
-  --state-error: #ff4d4f;
-  --state-success: #34d399;
-  --state-warning: #fbbf24;
+  /* AI States (Ghost AI Actions, Progress, Generation) */
+  --accent-ai: #7c3aed;
+  --accent-ai-hover: #6d28d9;
+  --accent-ai-text: #6d28d9;
+  --accent-ai-dim: rgb(124 58 237 / 11%);
+  --accent-ai-faint: rgb(124 58 237 / 5%);
 
-  /* shadcn semantic tokens (consumed by components/ui/*) */
-  --background: #080809;
-  --foreground: #f0f0f4;
-  --card: #111114;
-  --card-foreground: #f0f0f4;
-  --popover: #18181c;
-  --popover-foreground: #f0f0f4;
-  --primary: #00c8d4;
-  --primary-foreground: #080809;
-  --secondary: #18181c;
-  --secondary-foreground: #c0c0cc;
-  --muted: #1e1e23;
-  --muted-foreground: #808090;
-  --accent: rgb(0 200 212 / 12%);
-  --accent-foreground: #00c8d4;
-  --destructive: #ff4d4f;
-  --destructive-foreground: #f0f0f4;
-  --border: #2a2a30;
-  --input: #3a3a42;
-  --ring: #00c8d4;
+  /* Collaboration States (Presence, Chat, Shared Actions) */
+  --accent-collab: #0f766e;
+  --accent-collab-hover: #0d5d59;
+  --accent-collab-dim: rgb(15 118 110 / 10%);
+  --accent-collab-faint: rgb(15 118 110 / 5%);
+
+  /* Semantic Feedback States */
+  --state-error: #dc2626;
+  --state-error-dim: rgb(220 38 38 / 10%);
+  --state-success: #059669;
+  --state-success-dim: rgb(5 150 105 / 10%);
+  --state-warning: #d97706;
+  --state-warning-dim: rgb(217 119 6 / 10%);
+  --state-info: #0284c7;
+  --state-info-dim: rgb(2 132 199 / 10%);
+
+  /* Shadows & Depth */
+  --shadow-soft: 0 12px 36px rgb(15 23 42 / 8%);
+  --shadow-panel: 0 18px 48px rgb(15 23 42 / 12%);
+  --shadow-canvas-panel: 0 18px 44px rgb(0 0 0 / 28%);
+  --shadow-focus: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent-primary);
+
+  /* Canvas & Graph Specific */
+  --canvas-edge-default: rgb(226 232 240 / 68%);
+  --canvas-edge-soft: rgb(148 163 184 / 55%);
+  --canvas-edge-hover: rgb(37 99 235 / 100%);
+  --canvas-grid-default: rgb(148 163 184 / 12%);
+  --canvas-grid-soft: rgb(255 255 255 / 16%);
+  --canvas-glass-bg: rgb(255 255 255 / 10%);
+  --canvas-glass-border: rgb(255 255 255 / 15%);
+
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-primary);
+  --primary-foreground: var(--text-inverse);
+  --secondary: var(--bg-elevated);
+  --secondary-foreground: var(--text-secondary);
+  --muted: var(--bg-subtle);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--accent-primary-dim);
+  --accent-foreground: var(--accent-primary);
+  --destructive: var(--state-error);
+  --destructive-foreground: var(--text-inverse);
+  --border: var(--border-default);
+  --input: var(--border-subtle);
+  --ring: var(--accent-primary);
   --radius: 0.75rem;
 }
 
@@ -122,28 +189,236 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    background-color: var(--bg-base);
-    color: var(--text-primary);
-
-    @apply bg-background text-foreground;
-  }
-
   html {
     @apply font-sans;
   }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    text-rendering: geometricprecision;
+
+    @apply bg-background text-foreground;
+  }
 }
 
-/* Unlayered — wins over all @layer rules including Tailwind utilities */
+::selection {
+  background: var(--accent-primary-dim);
+  color: var(--text-primary);
+}
+
+.studio-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-soft);
+}
+
+.studio-panel-strong {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-panel);
+}
+
+.canvas-panel {
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid rgb(216 225 236 / 88%);
+  box-shadow: var(--shadow-canvas-panel);
+  backdrop-filter: blur(12px);
+}
+
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]) {
   cursor: pointer;
 }
 
-/* React Flow drag-selection box */
-/* stylelint-disable-next-line selector-class-pattern */
 .react-flow__selection {
-  background: rgb(0 200 212 / 8%);
+  background: rgb(37 99 235 / 14%);
   border: 1.5px solid var(--accent-primary);
   border-radius: 3px;
+}
+
+.react-flow__edge-path {
+  transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
+}
+
+.react-flow__handle {
+  transition: opacity 140ms ease, transform 140ms ease, background-color 140ms ease;
+}
+
+@keyframes ghost-flow-dash {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@keyframes cursor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ghost-ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ghost-pulse-dot {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+/* Control & Interaction Feedback */
+@keyframes shimmer-soft {
+  0%, 100% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* State Indication */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 currentcolor;
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes status-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 2px currentcolor;
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px currentcolor;
+  }
+}
+
+.ghost-flow-dashed {
+  stroke-dasharray: 6 5;
+  animation: ghost-flow-dash 1.6s linear infinite;
+}
+
+.ghost-flow-anim {
+  animation: ghost-flow-dash 1.6s linear infinite;
+}
+
+.ghost-pulse-dot {
+  animation: ghost-pulse-dot 1.6s ease-in-out infinite;
+}
+
+/* Smooth transitions across app */
+.transition-smooth {
+  @apply transition-all duration-150 ease-out;
+}
+
+.transition-smooth-lg {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Control state transitions */
+.control-interactive {
+  @apply transition-colors duration-120 ease-out;
+}
+
+.spatial-interactive {
+  @apply transition-all duration-300 ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -29,7 +29,7 @@ export function EditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="bg-elevated border border-border-default rounded-3xl max-w-md"
+        className="max-w-md rounded-3xl border border-border-default bg-surface shadow-[var(--shadow-panel)]"
       >
         <DialogHeader>
           <DialogTitle className="text-text-primary">{title}</DialogTitle>

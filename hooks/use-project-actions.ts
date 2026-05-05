@@ -1,21 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { type Project } from "@/lib/types";
+import { type Project, type ProjectStatus } from "@/lib/types";
 
 interface CreateInput {
   name: string;
   description?: string;
+  status?: ProjectStatus;
 }
 
 interface UpdateInput {
   name?: string;
   description?: string;
+  status?: ProjectStatus;
 }
 
 export function useProjectActions() {
-  const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -30,7 +30,6 @@ export function useProjectActions() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create project");
-      router.push(`/editor/${data.id}`);
       return data as Project;
     } finally {
       setIsCreating(false);
@@ -66,7 +65,6 @@ export function useProjectActions() {
         const data = await res.json();
         throw new Error(data.error ?? "Failed to delete project");
       }
-      router.push("/editor");
     } finally {
       setIsDeleting(false);
     }
