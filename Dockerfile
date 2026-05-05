@@ -1,9 +1,18 @@
-FROM node:22-alpine
+FROM node:24-alpine
+
+ENV NODE_ENV=development \
+    NEXT_TELEMETRY_DISABLED=1 \
+    CI=true
+
+RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci
+
+COPY prisma ./prisma
+RUN npx prisma generate
 
 COPY . .
 

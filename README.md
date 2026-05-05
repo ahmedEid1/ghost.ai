@@ -13,8 +13,8 @@ A public design-system route at [`/ui-showcase`](app/ui-showcase) presents the v
 ### With Docker Compose
 
 ```bash
-cp .env.example .env         # Create env file with your secrets
-docker compose up            # Runs Next.js app, Trigger.dev worker, and PostgreSQL
+cp .env.example .env         # Create env file — DATABASE_URL and TRIGGER_ACCESS_TOKEN are required
+docker compose up            # Runs Next.js app + Trigger.dev worker
 ```
 
 App runs at `http://localhost:3000`.
@@ -383,11 +383,12 @@ gohst.ai/
 
 ## Running with Docker Compose
 
-The fastest way to run the full stack locally. One command starts the Next.js app, the Trigger.dev background worker, and a Postgres database — with migrations applied automatically.
+The fastest way to run the app locally. One command starts the Next.js app and the Trigger.dev background worker. Bring your own Postgres (Prisma Postgres, Neon, Supabase, RDS, etc.) — there is no local database container.
 
 ### Prerequisites
 
 - Docker + Docker Compose
+- A Postgres database — managed (Prisma Postgres, Neon, Supabase) or self-hosted
 - Accounts: [Clerk](https://clerk.com) · [Liveblocks](https://liveblocks.io) · [Trigger.dev](https://trigger.dev) · [Vercel Blob](https://vercel.com/storage/blob) · [Anthropic](https://console.anthropic.com)
 
 ### 1. Clone
@@ -406,8 +407,8 @@ cp .env.example .env
 Fill in `.env` with your service credentials:
 
 ```env
-# Database (used by the app and Trigger worker; Docker Compose sets this automatically)
-DATABASE_URL=postgresql://postgres:postgres@db:5432/ghost_ai?schema=public
+# Database — your own Postgres connection string (Prisma Postgres, Neon, etc.)
+DATABASE_URL=postgresql://...
 
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
@@ -421,6 +422,11 @@ NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY=pk_...
 
 # Trigger.dev
 TRIGGER_SECRET_KEY=tr_...
+TRIGGER_PROJECT_REF=proj_...
+# Personal Access Token so `trigger dev` can authenticate inside the
+# container without an interactive browser login.
+# Create at https://cloud.trigger.dev/account/tokens
+TRIGGER_ACCESS_TOKEN=tr_pat_...
 
 # Anthropic
 ANTHROPIC_API_KEY=sk-ant-...
@@ -435,17 +441,16 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 docker compose up --build
 ```
 
-This spins up three containers:
+This spins up two containers:
 
 | Container | What it does | Port |
 |---|---|---|
-| `ghostai-db` | PostgreSQL 16 | `5432` |
-| `ghostai-app` | Next.js app (runs migrations on start) | `3000` |
-| `ghostai-trigger` | Trigger.dev background worker | — |
+| `ghostai-app` | Next.js app — runs `prisma migrate deploy` on start | `3000` |
+| `ghostai-trigger` | Trigger.dev background worker — connects to Trigger.dev cloud using `TRIGGER_ACCESS_TOKEN` | — |
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The app container waits for the database health check to pass before starting, then runs `prisma migrate deploy` automatically — no manual migration step needed.
+The app container runs `prisma migrate deploy` on startup, applying any pending migrations to the database referenced by `DATABASE_URL`.
 
 ---
 
