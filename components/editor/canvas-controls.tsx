@@ -25,7 +25,7 @@ function ControlButton({ onClick, disabled, label, children }: ControlButtonProp
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-elevated disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-elevated disabled:cursor-not-allowed disabled:opacity-40"
       style={{ color: "var(--text-secondary)" }}
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -47,11 +47,9 @@ export function CanvasControls({
 }: CanvasControlsProps) {
   return (
     <div
-      className="absolute bottom-4 left-4 z-10 flex items-center gap-0.5 rounded-xl px-1.5 py-1"
+      className="canvas-panel absolute bottom-4 left-4 z-10 flex items-center gap-0.5 rounded-2xl px-1.5 py-1"
       style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-default)",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+        color: "var(--text-secondary)",
       }}
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}

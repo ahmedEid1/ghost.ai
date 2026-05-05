@@ -20,8 +20,11 @@ export function CanvasContextMenu({
 }: CanvasContextMenuProps) {
   const onCloseRef = useRef(onClose);
   const onDeleteRef = useRef(onDelete);
-  onCloseRef.current = onClose;
-  onDeleteRef.current = onDelete;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    onDeleteRef.current = onDelete;
+  }, [onClose, onDelete]);
 
   // Click-outside and Escape dismiss — use stable refs so the listener is
   // registered once and never re-added due to prop reference churn.
@@ -43,7 +46,6 @@ export function CanvasContextMenu({
       document.removeEventListener("pointerdown", handlePointerDown, true);
     };
   // Empty deps — stable via refs; only runs once on mount and cleans up on unmount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const label = itemCount > 1 ? `Delete ${itemCount} items` : "Delete";
@@ -63,10 +65,10 @@ export function CanvasContextMenu({
         left: x,
         top: y,
         zIndex: 9999,
-        background: "var(--bg-elevated)",
+        background: "var(--bg-surface)",
         border: "1px solid var(--border-default)",
         borderRadius: 8,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+        boxShadow: "var(--shadow-canvas-panel)",
         minWidth: 160,
         padding: "4px",
       }}
@@ -80,8 +82,8 @@ export function CanvasContextMenu({
           onDeleteRef.current();
           onCloseRef.current();
         }}
-        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-surface focus:bg-surface focus:outline-none"
-        style={{ color: "var(--color-error, #f87171)" }}
+        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-elevated focus:bg-elevated focus:outline-none"
+        style={{ color: "var(--state-error)" }}
       >
         <Trash2 size={14} aria-hidden />
         {label}

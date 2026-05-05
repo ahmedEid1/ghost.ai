@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
 import { ProjectDialogsContext } from "@/components/editor/project-dialogs-context";
 import {
   CreateProjectDialog,
-  RenameProjectDialog,
+  EditProjectDialog,
   DeleteProjectDialog,
 } from "@/components/editor/project-dialogs";
 import { ShareDialog } from "@/components/editor/share-dialog";
@@ -19,6 +20,7 @@ interface EditorShellProps {
 }
 
 export function EditorShell({ children, initialProjects }: EditorShellProps) {
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [shareTarget, setShareTarget] = useState<Project | null>(null);
 
@@ -27,16 +29,20 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
     activeDialog,
     targetProject,
     projectName,
+    projectDescription,
+    projectStatus,
     isSubmitting,
     error,
     slug,
     setProjectName,
+    setProjectDescription,
+    setProjectStatus,
     openCreateDialog,
-    openRenameDialog,
+    openEditDialog,
     openDeleteDialog,
     closeDialog,
     handleCreate,
-    handleRename,
+    handleEdit,
     handleDelete,
   } = useProjectDialogs(initialProjects);
 
@@ -44,9 +50,57 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
     setIsSidebarOpen(true);
   }
 
+  function openShareDialog(project: Project) {
+    setIsSidebarOpen(false);
+    setShareTarget(project);
+  }
+
+  async function duplicateProject(project: Project) {
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: `Copy of ${project.name}` }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to duplicate");
+
+      const newProjectId: string = data.id;
+
+      // Try to copy canvas from original project
+      try {
+        const canvasRes = await fetch(`/api/projects/${project.id}/canvas`);
+        if (canvasRes.ok) {
+          const canvasData = await canvasRes.json();
+          await fetch(`/api/projects/${newProjectId}/canvas`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(canvasData),
+          });
+        }
+      } catch {
+        // Canvas copy is best-effort — navigate anyway
+      }
+
+      router.push(`/editor/${newProjectId}`);
+    } catch (err) {
+      console.error("Failed to duplicate project:", err);
+    }
+  }
+
   return (
-    <ProjectDialogsContext.Provider value={{ openCreateDialog, openSidebar }}>
-      <div className="h-screen w-screen overflow-hidden bg-base">
+    <ProjectDialogsContext.Provider
+      value={{
+        openCreateDialog,
+        openSidebar,
+        projects,
+        openEditDialog,
+        openDeleteDialog,
+        openShareDialog,
+        duplicateProject,
+      }}
+    >
+      <div className="h-screen w-screen overflow-hidden bg-base text-text-primary">
         <EditorNavbar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen((prev) => !prev)}
@@ -56,34 +110,39 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
           onClose={() => setIsSidebarOpen(false)}
           projects={projects}
           onOpenCreateDialog={openCreateDialog}
-          onRenameProject={openRenameDialog}
+          onEditProject={openEditDialog}
           onDeleteProject={openDeleteDialog}
-          onShareProject={(project) => {
-            setIsSidebarOpen(false);
-            setShareTarget(project);
-          }}
+          onShareProject={openShareDialog}
         />
         <main className="h-full pt-12">{children}</main>
 
         <CreateProjectDialog
           open={activeDialog === "create"}
           projectName={projectName}
+          projectDescription={projectDescription}
+          projectStatus={projectStatus}
           slug={slug}
           isSubmitting={isSubmitting}
           error={activeDialog === "create" ? error : null}
           onProjectNameChange={setProjectName}
+          onProjectDescriptionChange={setProjectDescription}
+          onProjectStatusChange={setProjectStatus}
           onCreate={handleCreate}
           onClose={closeDialog}
         />
-        <RenameProjectDialog
-          open={activeDialog === "rename"}
+        <EditProjectDialog
+          open={activeDialog === "edit"}
           project={targetProject}
           projectName={projectName}
+          projectDescription={projectDescription}
+          projectStatus={projectStatus}
           slug={slug}
           isSubmitting={isSubmitting}
-          error={activeDialog === "rename" ? error : null}
+          error={activeDialog === "edit" ? error : null}
           onProjectNameChange={setProjectName}
-          onRename={handleRename}
+          onProjectDescriptionChange={setProjectDescription}
+          onProjectStatusChange={setProjectStatus}
+          onSave={handleEdit}
           onClose={closeDialog}
         />
         <DeleteProjectDialog

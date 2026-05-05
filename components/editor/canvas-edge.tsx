@@ -33,15 +33,13 @@ export type CanvasEdgeFlowType = Edge<CanvasEdgeData, "canvasEdge">;
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
 export const EDGE_COLORS: { label: string; value: string }[] = [
-  { label: "Default", value: "rgba(255,255,255,0.55)" },
-  { label: "Cyan",    value: "#00c8d4" },
-  { label: "Blue",    value: "#52A8FF" },
-  { label: "Purple",  value: "#BF7AF0" },
-  { label: "Orange",  value: "#FF990A" },
-  { label: "Red",     value: "#FF6166" },
-  { label: "Pink",    value: "#F75F8F" },
-  { label: "Green",   value: "#62C073" },
-  { label: "Teal",    value: "#0AC7B4" },
+  { label: "Default", value: "var(--canvas-edge-default)" },
+  { label: "Blue",    value: "var(--accent-primary)" },
+  { label: "Violet",  value: "var(--accent-ai)" },
+  { label: "Teal",    value: "var(--accent-collab)" },
+  { label: "Amber",   value: "var(--state-warning)" },
+  { label: "Red",     value: "var(--state-error)" },
+  { label: "Green",   value: "var(--state-success)" },
 ];
 
 export const EDGE_WIDTHS: { label: string; value: number }[] = [
@@ -148,7 +146,7 @@ export function CanvasEdge({
   const { setEdges, screenToFlowPosition } = useReactFlow();
 
   const routing     = data?.routing     ?? "smoothstep";
-  const color       = data?.color       ?? "rgba(255,255,255,0.55)";
+  const color       = data?.color       ?? "var(--canvas-edge-default)";
   const strokeWidth = data?.strokeWidth ?? 1.5;
   const strokeDash  = data?.strokeDash  ?? "solid";
   const arrowStart  = data?.arrowStart  ?? false;
@@ -182,7 +180,7 @@ export function CanvasEdge({
 
   const displayLabel = dragLabelPos ?? labelPos;
 
-  const strokeColor = selected ? "#00c8d4" : color;
+  const strokeColor = selected ? "var(--accent-primary)" : color;
   const opacity     = selected ? 1 : isHovered ? 1 : 0.65;
   const da          = dashArray(strokeDash, strokeWidth);
 
@@ -417,14 +415,14 @@ function EdgeStyleToolbar({
       onDoubleClick={(e) => e.stopPropagation()}
     >
       <div style={{
-        background:    "var(--bg-elevated)",
+        background:    "var(--bg-surface)",
         border:        "1px solid var(--border-subtle)",
         borderRadius:  12,
         padding:       "5px 8px",
         display:       "flex",
         flexDirection: "column",
         gap:           5,
-        boxShadow:     "0 8px 32px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04) inset",
+        boxShadow:     "var(--shadow-canvas-panel)",
         userSelect:    "none",
         whiteSpace:    "nowrap",
       }}>
@@ -456,9 +454,9 @@ function EdgeStyleToolbar({
                 width: 14, height: 14,
                 borderRadius: "50%",
                 background:   c.value,
-                border:       c.value === color ? "2px solid rgba(255,255,255,0.9)" : "2px solid transparent",
+                border:       c.value === color ? "2px solid var(--bg-surface)" : "2px solid transparent",
                 outline:      c.value === color
-                  ? `2px solid ${c.value === "rgba(255,255,255,0.55)" ? "rgba(255,255,255,0.4)" : c.value}`
+                  ? `2px solid ${c.value}`
                   : "none",
                 outlineOffset: 2,
                 cursor:       "pointer",
@@ -687,7 +685,7 @@ function EdgeLabelArea({
               border:     "1px solid var(--border-subtle)",
               whiteSpace: "nowrap",
               display:    "block",
-              boxShadow:  isSelected ? "0 0 0 1px rgba(0,200,212,0.3)" : undefined,
+              boxShadow:  isSelected ? "0 0 0 1px var(--accent-primary-dim)" : undefined,
             }}
           >
             {label}
@@ -734,7 +732,7 @@ function EdgeLabelArea({
       >
         <span
           className="rounded-full px-2 py-0.5 text-xs"
-          style={{ color: "var(--text-faint)", background: "rgba(0,0,0,0.4)", display: "block" }}
+          style={{ color: "var(--text-secondary)", background: "var(--bg-surface)", display: "block", border: "1px solid var(--border-subtle)" }}
         >
           + label
         </span>

@@ -7,6 +7,7 @@ export interface CursorParticipant {
   displayName: string;
   cursorColor: string;
   cursor: { x: number; y: number } | null;
+  thinking: boolean;
 }
 
 interface SingleCursorProps {
@@ -16,11 +17,34 @@ interface SingleCursorProps {
   vpY: number;
 }
 
+function ThinkingSpinner({ color }: { color: string }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4, flexShrink: 0 }}
+      aria-hidden
+    >
+      <circle
+        cx="5"
+        cy="5"
+        r="3.5"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeDasharray="11 5"
+        strokeLinecap="round"
+        style={{ transformOrigin: "50% 50%", animation: "cursor-spin 0.75s linear infinite" }}
+      />
+    </svg>
+  );
+}
+
 function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
-  const { cursor, cursorColor, displayName } = participant;
+  const { cursor, cursorColor, displayName, thinking } = participant;
   if (!cursor) return null;
 
-  // Convert flow coordinates to container-relative pixel position
   const screenX = cursor.x * zoom + vpX;
   const screenY = cursor.y * zoom + vpY;
 
@@ -54,12 +78,15 @@ function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
         />
       </svg>
 
-      {/* Name badge */}
+      {/* Name badge — stable min-width so it doesn't jitter during presence updates */}
       <div
         style={{
           position: "absolute",
           top: 14,
           left: 14,
+          display: "flex",
+          alignItems: "center",
+          minWidth: 60,
           padding: "2px 8px",
           borderRadius: 6,
           background: cursorColor,
@@ -71,6 +98,7 @@ function SingleCursor({ participant, zoom, vpX, vpY }: SingleCursorProps) {
           boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
         }}
       >
+        {thinking && <ThinkingSpinner color="rgba(255,255,255,0.85)" />}
         {displayName}
       </div>
     </div>
@@ -90,6 +118,7 @@ export function LiveCursorLayer({ participants }: LiveCursorLayerProps) {
 
   return (
     <>
+      <style>{`@keyframes cursor-spin { to { transform: rotate(360deg); } }`}</style>
       {withCursor.map((p) => (
         <SingleCursor
           key={p.id}

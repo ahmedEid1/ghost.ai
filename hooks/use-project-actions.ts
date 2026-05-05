@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { type Project } from "@/lib/types";
+import { type Project, type ProjectStatus } from "@/lib/types";
 
 interface CreateInput {
   name: string;
   description?: string;
+  status?: ProjectStatus;
 }
 
 interface UpdateInput {
   name?: string;
   description?: string;
+  status?: ProjectStatus;
 }
 
 export function useProjectActions() {
