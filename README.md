@@ -30,7 +30,7 @@ The result is a codebase where every decision has a written reason, no feature d
 
 ## Demo
 
-[![Ghost AI Demo](https://img.youtube.com/vi/aka5TanQiiI/maxresdefault.jpg)](https://www.youtube.com/watch?v=aka5TanQiiI)
+![Ghost AI Demo](docs/demo.gif)
 
 ---
 
