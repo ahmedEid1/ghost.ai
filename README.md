@@ -5,8 +5,17 @@
 <h1 align="center">Ghost AI — Real-time AI System Design Studio</h1>
 
 <p align="center">
-  Describe a system in plain language. Claude generates a validated architecture and streams it onto a live canvas where your team edits in real time. One click produces a structured Markdown technical spec, stored with a download link.
+  Describe a system in plain language. Claude returns a <strong>schema-validated</strong> action plan —
+  typed JSON, never free text — that is checked against the canvas before a single node moves, then
+  streamed onto a live collaborative canvas your team edits in real time. One click exports a structured
+  Markdown technical spec, stored with a download link.
 </p>
+
+> **The agent is fenced in by design.** The LLM never writes free text into shared state. Every AI
+> action is produced as a typed, Zod-validated plan (`generateObject`), then passed through a
+> pre-mutation validation gate — dangling edge references, duplicate IDs, and dimension violations are
+> rejected *before* the canvas is touched. Structured output isn't a convenience here; it's the
+> guardrail that makes an autonomous agent safe to point at a live, multi-user document.
 
 ---
 
@@ -54,8 +63,8 @@ The result is a codebase where every decision has a written reason, no feature d
 ### Docker Compose (recommended)
 
 ```bash
-git clone https://github.com/ahmedEid1/gohst.ai.git
-cd gohst.ai
+git clone https://github.com/ahmedEid1/ghost.ai.git
+cd ghost.ai
 cp .env.example .env      # fill in all values — see Environment Variables below
 docker compose up --build
 ```
@@ -116,10 +125,11 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 
 ### AI Architecture Generation
 
-- **Plain-English prompt** → Claude generates a validated action plan (add / move / resize / update / delete nodes and edges) using `generateObject` with a Zod schema
-- **Durable execution** — design agent runs as a Trigger.dev task, not inside a request handler; retries on failure
-- **Real-time phase broadcast** — events sent to all room members as operations happen
-- **Pre-mutation validation** — dangling edge references, duplicate IDs, and dimension violations are caught before the canvas is touched
+- **Structured output as a guardrail** — Claude returns a Zod-validated action plan via `generateObject` (add / move / resize / update / delete nodes and edges). The model emits typed JSON, never free text, so its output is parseable and constrained by contract before anything runs.
+- **Pre-mutation validation gate** — every generated plan is checked for dangling edge references, duplicate IDs, and dimension-constraint violations, and rejected if invalid, *before* the canvas is mutated.
+- **Plain-English prompt** → the validated plan is applied to the canvas; nothing reaches shared state unvalidated.
+- **Durable execution** — the design agent runs as a Trigger.dev task, not inside a request handler; it retries on failure.
+- **Real-time phase broadcast** — phase events are streamed to all room members as operations happen.
 
 ### Technical Spec Generation
 
@@ -173,7 +183,7 @@ User prompt
 
 **Architecture invariants:**
 1. Long-running AI work never runs inside a request handler — always Trigger.dev
-2. AI output is always Zod-validated before it can mutate shared canvas state
+2. AI output is **Zod-validated and passes the pre-mutation validation gate** before it can mutate shared canvas state — the model cannot write unvalidated data into the room
 3. Canvas schema stays compatible across manual edits, templates, AI mutations, autosave, and spec generation
 4. Every API mutation verifies auth and project membership before touching data
 
@@ -182,7 +192,7 @@ User prompt
 ## Project Structure
 
 ```
-gohst.ai/
+ghost.ai/
 ├── app/
 │   ├── api/              # Thin authenticated route handlers
 │   ├── editor/           # Canvas workspace (Liveblocks room)
