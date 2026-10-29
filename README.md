@@ -217,6 +217,18 @@ ghost.ai/
 
 ---
 
+## Credits
+
+This project is based on JavaScript Mastery's Ghost AI tutorial ([video](https://youtu.be/14RP8liACqo), [source](https://github.com/adrianhajdin/ghost-ai)). The product idea, stack, project layout, feature specs, and the spec-driven workflow with `context/` files come from the tutorial.
+
+My changes:
+
+- The design agent uses Claude through the AI SDK's `generateObject` with a Zod plan schema, instead of the tutorial's Gemini tool calls ([`trigger/design-agent.ts`](trigger/design-agent.ts)). Spec generation also uses Claude ([`trigger/generate-spec.ts`](trigger/generate-spec.ts), [`lib/ai.ts`](lib/ai.ts)).
+- A validation pass runs before the canvas is changed. It drops edges whose source or target node does not exist, nodes or edges whose ID is already on the canvas, and actions that target a node or edge that does not exist.
+- A Docker setup ([`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml)) and a public design-system page at [`/ui-showcase`](app/ui-showcase).
+
+---
+
 ## License
 
 MIT
