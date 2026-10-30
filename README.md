@@ -13,8 +13,8 @@
 
 > **The agent is fenced in by design.** The LLM never writes free text into shared state. Every AI
 > action is produced as a typed, Zod-validated plan (`generateObject`), then passed through a
-> pre-mutation validation gate — dangling edge references, duplicate IDs, and dimension violations are
-> rejected *before* the canvas is touched. Structured output isn't a convenience here; it's the
+> pre-mutation validation gate: actions with dangling edge references or IDs already on the canvas are
+> dropped, and node sizes are raised to per-shape minimums, *before* the canvas is touched. Structured output isn't a convenience here; it's the
 > guardrail that makes an autonomous agent safe to point at a live, multi-user document.
 
 ---
@@ -126,7 +126,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 ### AI Architecture Generation
 
 - **Structured output as a guardrail** — Claude returns a Zod-validated action plan via `generateObject` (add / move / resize / update / delete nodes and edges). The model emits typed JSON, never free text, so its output is parseable and constrained by contract before anything runs.
-- **Pre-mutation validation gate** — every generated plan is checked for dangling edge references, duplicate IDs, and dimension-constraint violations, and rejected if invalid, *before* the canvas is mutated.
+- **Pre-mutation validation gate** — before the canvas is mutated, every generated plan is filtered: actions with dangling edge references or IDs already on the canvas are dropped, and node sizes are raised to per-shape minimums.
 - **Plain-English prompt** → the validated plan is applied to the canvas; nothing reaches shared state unvalidated.
 - **Durable execution** — the design agent runs as a Trigger.dev task, not inside a request handler; it retries on failure.
 - **Real-time phase broadcast** — phase events are streamed to all room members as operations happen.
@@ -171,7 +171,7 @@ User prompt
     │
     ▼
 [4] Pre-mutation validation pass
-    Filter dangling refs, duplicate IDs, dimension constraint violations
+    Drop dangling refs and IDs already on the canvas; clamp sizes to minimums
     │
     ▼
 [5] Apply validated actions to live canvas via mutateFlow()
@@ -214,6 +214,18 @@ ghost.ai/
     ├── tracker.md        # Workflow and current progress
     └── features/         # Per-feature briefs (F1–F9)
 ```
+
+---
+
+## Credits
+
+This project is based on JavaScript Mastery's Ghost AI tutorial ([video](https://youtu.be/14RP8liACqo), [source](https://github.com/adrianhajdin/ghost-ai)). The product idea, stack, project layout, feature specs, and the spec-driven workflow with `context/` files come from the tutorial.
+
+My changes:
+
+- The design agent uses Claude through the AI SDK's `generateObject` with a Zod plan schema, instead of the tutorial's Gemini tool calls ([`trigger/design-agent.ts`](trigger/design-agent.ts)). Spec generation also uses Claude ([`trigger/generate-spec.ts`](trigger/generate-spec.ts), [`lib/ai.ts`](lib/ai.ts)).
+- A validation pass runs before the canvas is changed. It drops edges whose source or target node does not exist, nodes or edges whose ID is already on the canvas, and actions that target a node or edge that does not exist.
+- A Docker setup ([`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml)) and a public design-system page at [`/ui-showcase`](app/ui-showcase).
 
 ---
 
